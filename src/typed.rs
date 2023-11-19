@@ -24,14 +24,14 @@ impl Algorithm {
 }
 
 #[derive(Deserialize, Debug, Clone, Copy)]
-#[serde(tag="type", rename_all="camelCase")]
+#[serde(tag = "type", rename_all = "camelCase")]
 pub enum PathMethod {
     NearestNeighbor,
     BruteForce,
 }
 
 impl PathMethod {
-    pub fn implementation(self) -> fn(&Responder, u8, &mut [Vec<f64>]) {
+    pub fn implementation(self) -> fn(&Responder, u8, &mut [Vec<f32>]) {
         match self {
             Self::NearestNeighbor => path::create::nearest_neighbor,
             Self::BruteForce => path::create::brute_force,
@@ -46,7 +46,11 @@ pub enum Action {
         numbers: Vec<u64>,
         algorithm: Algorithm,
     },
-    CreatePath { dimensions: u8, values: Vec<Vec<f64>>, method: PathMethod },
+    CreatePath {
+        dimensions: u8,
+        values: Vec<Vec<f32>>,
+        method: PathMethod,
+    },
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -81,7 +85,7 @@ pub enum Output {
     },
     PathCreation {
         done: bool,
-        current_path: Vec<Vec<f64>>,
+        current_path: Vec<Vec<f32>>,
     },
     #[serde(rename_all = "camelCase")]
     Latency {

@@ -1,15 +1,10 @@
+use crate::sleep_ms;
 use crate::typed::{
     self,
     Highlight::{self, Compare, Correct, Swap},
 };
 use crate::Output;
 use simple_websockets::Responder;
-use std::thread;
-use std::time::Duration;
-
-fn sleep_ms(ms: u64) {
-    thread::sleep(Duration::from_millis(ms))
-}
 
 fn send(
     client: &Responder,
@@ -61,15 +56,11 @@ pub fn selection(client: &Responder, numbers: &mut [u64]) {
             numbers.swap(i, min_index);
             send(&client, numbers, vec![(i, Swap), (min_index, Swap)]);
             sleep_ms(500);
-        } else if i != numbers.len()-1 {
+        } else if i != numbers.len() - 1 {
             send(&client, numbers, vec![(i, Compare)]);
             sleep_ms(500);
         }
-        send(
-            &client,
-            numbers,
-            (0..=i).map(|i|(i, Correct))
-        );
+        send(&client, numbers, (0..=i).map(|i| (i, Correct)));
         sleep_ms(500);
     }
 }

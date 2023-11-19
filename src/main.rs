@@ -1,4 +1,6 @@
 use simple_websockets::Responder;
+use std::thread;
+use std::time::Duration;
 use std::time::SystemTime;
 use std::{collections::HashMap, time::UNIX_EPOCH};
 use typed::{Action, Output};
@@ -12,6 +14,10 @@ mod path;
 mod typed;
 
 const PORT: u16 = 3141;
+
+fn sleep_ms(ms: u64) {
+    thread::sleep(Duration::from_millis(ms))
+}
 
 fn main() {
     let event_hub =
@@ -57,10 +63,14 @@ fn handle_action(action: Action, client: &Responder) {
                     highlight: vec![],
                 },
             );
-        },
-        Action::CreatePath { dimensions: dim, mut values, method } => {
+        }
+        Action::CreatePath {
+            dimensions: dim,
+            mut values,
+            method,
+        } => {
             let method = method.implementation();
-            method(client, dim, &mut values);
+            method(client, dim, &mut *values);
         }
     }
 }
