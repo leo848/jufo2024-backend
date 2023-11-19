@@ -23,7 +23,7 @@ fn send(client: &Responder, values: &[Vec<f32>]) {
     )
 }
 
-pub fn nearest_neighbor(client: &Responder, dim: u8, values: &mut [Vec<f32>]) {
+pub fn nearest_neighbor(client: &Responder, dim: u8, values: &mut Vec<Vec<f32>>) {
     assert_dim(dim, values);
 
     let mut visited = HashSet::new();
@@ -43,9 +43,11 @@ pub fn nearest_neighbor(client: &Responder, dim: u8, values: &mut [Vec<f32>]) {
         path.push(min.clone());
         send(client, &path);
     }
+
+    *values = path;
 }
 
-pub fn brute_force(client: &Responder, dim: u8, values: &mut [Vec<f32>]) {
+pub fn brute_force(client: &Responder, dim: u8, values: &mut Vec<Vec<f32>>) {
     assert_dim(dim, values);
     todo!("{:?}", client);
 }

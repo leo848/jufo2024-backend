@@ -70,7 +70,11 @@ fn handle_action(action: Action, client: &Responder) {
             method,
         } => {
             let method = method.implementation();
-            method(client, dim, &mut *values);
+            method(client, dim, &mut values);
+
+            typed::send(
+                &client, Output::PathCreation { done: true, current_path: values }
+            );
         }
     }
 }

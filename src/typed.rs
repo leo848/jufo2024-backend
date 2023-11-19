@@ -31,7 +31,7 @@ pub enum PathMethod {
 }
 
 impl PathMethod {
-    pub fn implementation(self) -> fn(&Responder, u8, &mut [Vec<f32>]) {
+    pub fn implementation(self) -> fn(&Responder, u8, &mut Vec<Vec<f32>>) {
         match self {
             Self::NearestNeighbor => path::create::nearest_neighbor,
             Self::BruteForce => path::create::brute_force,
