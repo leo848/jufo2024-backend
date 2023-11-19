@@ -83,6 +83,7 @@ pub enum Output {
         numbers: Vec<u64>,
         highlight: Vec<(usize, Highlight)>,
     },
+    #[serde(rename_all = "camelCase")]
     PathCreation {
         done: bool,
         current_path: Vec<Vec<f32>>,

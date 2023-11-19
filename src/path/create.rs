@@ -1,3 +1,4 @@
+use core::ops::Not;
 use crate::path::HashPoint;
 use std::collections::HashSet;
 
@@ -33,7 +34,7 @@ pub fn nearest_neighbor(client: &Responder, dim: u8, values: &mut [Vec<f32>]) {
 
         let min = values
             .iter()
-            .filter(|&point| visited.contains(&HashPoint(point.clone())))
+            .filter(|&point| Not::not(visited.contains(&HashPoint(point.clone()))))
             .min_by(|point1, point2| {
                 distance_squared(point1, &last).total_cmp(&distance_squared(point2, &last))
             })
