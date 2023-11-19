@@ -1,5 +1,6 @@
 use core::ops::Not;
 use crate::path::HashPoint;
+use crate::sleep_ms;
 use std::collections::HashSet;
 
 use crate::typed;
@@ -13,14 +14,15 @@ pub fn assert_dim(dim: u8, values: &[Vec<f32>]) {
     assert!(values.iter().all(|s| s.len() == dim as usize))
 }
 
-fn send(client: &Responder, values: &[Vec<f32>]) {
+fn send(client: &Responder, values: &[Vec<f32>], sleep: u64) {
     typed::send(
         &client,
         Output::PathCreation {
             done: false,
             current_path: values.into(),
         },
-    )
+    );
+    sleep_ms(sleep);
 }
 
 pub fn nearest_neighbor(client: &Responder, dim: u8, values: &mut Vec<Vec<f32>>) {
@@ -41,7 +43,7 @@ pub fn nearest_neighbor(client: &Responder, dim: u8, values: &mut Vec<Vec<f32>>)
             .expect("point was empty even though path is not full");
 
         path.push(min.clone());
-        send(client, &path);
+        send(client, &path, u64::min(values.len() as u64 * 500, 5000) / values.len() as u64);
     }
 
     *values = path;
