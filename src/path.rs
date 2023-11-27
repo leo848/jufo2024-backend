@@ -24,3 +24,7 @@ pub fn distance_squared(a: &[f32], b: &[f32]) -> f32 {
         .map(|(comp1, comp2)| (comp1 - comp2) * (comp1 - comp2))
         .sum();
 }
+
+pub fn cost(values: &[Vec<f32>]) -> f32 {
+    values.windows(2).map(|s| distance_squared(&s[0], &s[1])).sum()
+}
