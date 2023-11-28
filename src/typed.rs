@@ -33,13 +33,16 @@ impl Algorithm {
 pub enum PathMethod {
     NearestNeighbor,
     BruteForce,
+    Greedy,
 }
 
 impl PathMethod {
+    #[inline]
     pub fn implementation(self) -> fn(&Responder, u8, &mut Vec<Vec<f32>>) {
         match self {
             Self::NearestNeighbor => path::create::nearest_neighbor,
             Self::BruteForce => path::create::brute_force,
+            Self::Greedy => path::create::greedy,
         }
     }
 }
