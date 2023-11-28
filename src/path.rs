@@ -1,9 +1,9 @@
-use itertools::Itertools;
 use core::hash::Hash;
+use itertools::Itertools;
 
 pub mod create;
-pub mod improve;
 pub mod creation;
+pub mod improve;
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct HashPoint(pub Vec<f32>);
@@ -20,8 +20,7 @@ impl Hash for HashPoint {
 impl Eq for HashPoint {}
 
 pub fn distance_squared(a: &[f32], b: &[f32]) -> f32 {
-    a
-        .iter()
+    a.iter()
         .zip(b)
         .map(|(comp1, comp2)| (comp1 - comp2) * (comp1 - comp2))
         .sum()
@@ -36,5 +35,5 @@ pub fn cost(values: &[Vec<f32>]) -> f32 {
 }
 
 pub fn path_to_edges(path: &[Vec<f32>]) -> Vec<(Vec<f32>, Vec<f32>)> {
-    path.iter().cloned().tuple_windows::<(_,_)>().collect()
+    path.iter().cloned().tuple_windows::<(_, _)>().collect()
 }

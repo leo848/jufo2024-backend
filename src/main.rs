@@ -13,6 +13,7 @@ mod error;
 mod integer_sort;
 mod path;
 mod typed;
+mod util;
 
 const PORT: u16 = 3141;
 
@@ -73,9 +74,7 @@ fn handle_action(action: Action, client: &Responder) {
             let method = method.implementation();
             method(client, dim, &mut values);
 
-            typed::send(
-                &client, PathCreation::done(values)
-            );
+            typed::send(&client, PathCreation::done(values));
         }
     }
 }

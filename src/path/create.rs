@@ -1,13 +1,14 @@
-use crate::path::creation::PathCreation;
-use crate::typed::send;
-use core::ops::Not;
-use crate::path::HashPoint;
 use crate::path::cost;
+use crate::path::creation::PathCreation;
+use crate::path::HashPoint;
 use crate::sleep_ms;
+use crate::typed::send;
+use crate::util::factorial;
+use core::ops::Not;
 use std::collections::HashSet;
 
-use simple_websockets::Responder;
 use itertools::Itertools;
+use simple_websockets::Responder;
 
 use super::distance_squared;
 
@@ -61,8 +62,19 @@ pub fn brute_force(client: &Responder, dim: u8, values: &mut Vec<Vec<f32>>) {
     let mut min = f32::INFINITY;
     let mut min_permutation = values.clone();
 
-    for permutation in values.clone().into_iter().permutations(values.len()) {
-        send(client, PathCreation::from_path(permutation.clone()));
+    let permutation_count = factorial(values.len());
+
+    for (i, permutation) in values
+        .clone()
+        .into_iter()
+        .permutations(values.len())
+        .enumerate()
+    {
+        send(
+            client,
+            PathCreation::from_path(permutation.clone())
+                .progress(i as f32 / permutation_count as f32),
+        );
         if cost(&permutation) < min {
             min = cost(&permutation);
             min_permutation = permutation;

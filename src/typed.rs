@@ -3,7 +3,12 @@ use simple_websockets::{Event, EventHub, Message, Responder};
 
 use std::collections::HashMap;
 
-use crate::{autorestart, error::Error, integer_sort, path::{self, creation::PathCreation}};
+use crate::{
+    autorestart,
+    error::Error,
+    integer_sort,
+    path::{self, creation::PathCreation},
+};
 
 #[derive(Deserialize, Debug, Clone, Copy)]
 #[serde(rename_all = "camelCase")]

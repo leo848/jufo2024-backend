@@ -4,15 +4,15 @@ use serde::Serialize;
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PathCreation {
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     done_path: Option<Vec<Vec<f32>>>,
     current_edges: Vec<(Vec<f32>, Vec<f32>)>,
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     progress: Option<f32>,
 }
 
 impl PathCreation {
-    pub fn from_edges(edges: Vec<(Vec<f32>,Vec<f32>)>) -> Self {
+    pub fn from_edges(edges: Vec<(Vec<f32>, Vec<f32>)>) -> Self {
         Self {
             current_edges: edges,
             done_path: None,
