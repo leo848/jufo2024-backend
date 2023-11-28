@@ -1,3 +1,4 @@
+use crate::path::creation::PathCreation;
 use simple_websockets::Responder;
 use std::thread;
 use std::time::Duration;
@@ -73,7 +74,7 @@ fn handle_action(action: Action, client: &Responder) {
             method(client, dim, &mut values);
 
             typed::send(
-                &client, Output::PathCreation { done: true, current_path: values }
+                &client, PathCreation::done(values)
             );
         }
     }

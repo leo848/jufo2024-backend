@@ -1,11 +1,11 @@
+use crate::path::creation::PathCreation;
+use crate::typed::send;
 use core::ops::Not;
 use crate::path::HashPoint;
 use crate::path::cost;
 use crate::sleep_ms;
 use std::collections::HashSet;
 
-use crate::typed;
-use crate::Output;
 use simple_websockets::Responder;
 use itertools::Itertools;
 
@@ -16,16 +16,17 @@ pub fn assert_dim(dim: u8, values: &[Vec<f32>]) {
     assert!(values.iter().all(|s| s.len() == dim as usize))
 }
 
-fn send(client: &Responder, values: &[Vec<f32>], sleep: u64) {
-    typed::send(
-        &client,
-        Output::PathCreation {
-            done: false,
-            current_path: values.into(),
-        },
-    );
-    sleep_ms(sleep);
-}
+// fn send(client: &Responder, values: &[Vec<f32>], sleep: u64) {
+//     typed::send(
+//         &client,
+//         PathCreation {
+//             done_path: None,
+//             progress: None,
+//             current_edges: super::path_to_edges(values),
+//         },
+//     );
+//     sleep_ms(sleep);
+// }
 
 pub fn nearest_neighbor(client: &Responder, dim: u8, values: &mut Vec<Vec<f32>>) {
     assert_dim(dim, values);
@@ -47,7 +48,8 @@ pub fn nearest_neighbor(client: &Responder, dim: u8, values: &mut Vec<Vec<f32>>)
             .expect("point was empty even though path is not full");
 
         path.push(min.clone());
-        send(client, &path, sleep_time);
+        send(client, PathCreation::from_path(path.clone()));
+        sleep_ms(sleep_time);
     }
 
     *values = path;
@@ -60,7 +62,7 @@ pub fn brute_force(client: &Responder, dim: u8, values: &mut Vec<Vec<f32>>) {
     let mut min_permutation = values.clone();
 
     for permutation in values.clone().into_iter().permutations(values.len()) {
-        send(client, &permutation, 0);
+        send(client, PathCreation::from_path(permutation.clone()));
         if cost(&permutation) < min {
             min = cost(&permutation);
             min_permutation = permutation;

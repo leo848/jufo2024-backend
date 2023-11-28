@@ -3,7 +3,7 @@ use simple_websockets::{Event, EventHub, Message, Responder};
 
 use std::collections::HashMap;
 
-use crate::{autorestart, error::Error, integer_sort, path};
+use crate::{autorestart, error::Error, integer_sort, path::{self, creation::PathCreation}};
 
 #[derive(Deserialize, Debug, Clone, Copy)]
 #[serde(rename_all = "camelCase")]
@@ -83,11 +83,7 @@ pub enum Output {
         numbers: Vec<u64>,
         highlight: Vec<(usize, Highlight)>,
     },
-    #[serde(rename_all = "camelCase")]
-    PathCreation {
-        done: bool,
-        current_path: Vec<Vec<f32>>,
-    },
+    PathCreation(PathCreation),
     #[serde(rename_all = "camelCase")]
     Latency {
         time_millis: u128,
@@ -146,10 +142,10 @@ pub fn poll(event_hub: &EventHub, clients: &mut HashMap<u64, Responder>) -> (Res
     }
 }
 
-pub fn send(client: &Responder, message: Output) {
+pub fn send(client: &Responder, message: impl Into<Output>) {
     autorestart::update();
     client.send(Message::Text(
-        serde_json::to_string(&message).expect("Bug: could not serialize string"),
+        serde_json::to_string(&message.into()).expect("Bug: could not serialize string"),
     ));
 }
 
