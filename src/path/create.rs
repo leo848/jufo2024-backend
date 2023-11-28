@@ -17,18 +17,6 @@ pub fn assert_dim(dim: u8, values: &[Vec<f32>]) {
     assert!(values.iter().all(|s| s.len() == dim as usize))
 }
 
-// fn send(client: &Responder, values: &[Vec<f32>], sleep: u64) {
-//     typed::send(
-//         &client,
-//         PathCreation {
-//             done_path: None,
-//             progress: None,
-//             current_edges: super::path_to_edges(values),
-//         },
-//     );
-//     sleep_ms(sleep);
-// }
-
 pub fn nearest_neighbor(client: &Responder, dim: u8, values: &mut Vec<Vec<f32>>) {
     assert_dim(dim, values);
 
@@ -49,7 +37,10 @@ pub fn nearest_neighbor(client: &Responder, dim: u8, values: &mut Vec<Vec<f32>>)
             .expect("point was empty even though path is not full");
 
         path.push(min.clone());
-        send(client, PathCreation::from_path(path.clone()));
+        send(
+            client,
+            PathCreation::from_path(path.clone()).progress(path.len() as f32 / values.len() as f32),
+        );
         sleep_ms(sleep_time);
     }
 
