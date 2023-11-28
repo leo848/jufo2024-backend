@@ -1,10 +1,13 @@
-use crate::sleep_ms;
-use crate::typed::{
-    self,
-    Highlight::{self, Compare, Correct, Swap},
-};
-use crate::Output;
 use simple_websockets::Responder;
+
+use crate::{
+    sleep_ms,
+    typed::{
+        self,
+        Highlight::{self, Compare, Correct, Swap},
+    },
+    Output,
+};
 
 fn send(
     client: &Responder,

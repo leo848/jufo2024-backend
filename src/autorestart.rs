@@ -1,4 +1,3 @@
-use chksum::{chksum, hash::MD5};
 use std::{
     collections::hash_map::DefaultHasher,
     hash::Hasher,
@@ -7,6 +6,8 @@ use std::{
     process::Command,
     sync::atomic::{AtomicU64, Ordering},
 };
+
+use chksum::{chksum, hash::MD5};
 
 static HASH: AtomicU64 = AtomicU64::new(u64::MAX);
 

@@ -1,9 +1,3 @@
-use crate::path::cost;
-use crate::path::creation::PathCreation;
-use crate::path::HashPoint;
-use crate::sleep_ms;
-use crate::typed::send;
-use crate::util::factorial;
 use core::ops::Not;
 use std::collections::HashSet;
 
@@ -11,6 +5,12 @@ use itertools::Itertools;
 use simple_websockets::Responder;
 
 use super::distance_squared;
+use crate::{
+    path::{cost, creation::PathCreation, HashPoint},
+    sleep_ms,
+    typed::send,
+    util::factorial,
+};
 
 #[inline]
 pub fn assert_dim(dim: u8, values: &[Vec<f32>]) {

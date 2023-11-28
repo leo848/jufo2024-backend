@@ -1,12 +1,13 @@
-use crate::path::creation::PathCreation;
+use std::{
+    collections::HashMap,
+    thread,
+    time::{Duration, SystemTime, UNIX_EPOCH},
+};
+
 use simple_websockets::Responder;
-use std::thread;
-use std::time::Duration;
-use std::time::SystemTime;
-use std::{collections::HashMap, time::UNIX_EPOCH};
 use typed::{Action, Output};
 
-use crate::typed::Input;
+use crate::{path::creation::PathCreation, typed::Input};
 
 mod autorestart;
 mod error;

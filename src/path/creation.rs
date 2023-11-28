@@ -1,5 +1,6 @@
-use crate::Output;
 use serde::Serialize;
+
+use crate::Output;
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]

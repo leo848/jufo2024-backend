@@ -1,7 +1,7 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 use simple_websockets::{Event, EventHub, Message, Responder};
-
-use std::collections::HashMap;
 
 use crate::{
     autorestart,
