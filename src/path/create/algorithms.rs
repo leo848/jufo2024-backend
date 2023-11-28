@@ -1,7 +1,7 @@
 use core::ops::Not;
 use std::collections::HashSet;
-use bimap::BiMap;
 
+use bimap::BiMap;
 use itertools::Itertools;
 use simple_websockets::Responder;
 
@@ -78,18 +78,23 @@ pub fn greedy<'a>(client: &Responder, dim: u8, values: &'a mut Vec<Vec<f32>>) {
     assert_dim(dim, &values);
 
     let mut sorted_edge_iterator = edges(&values)
-            .sorted_by(|(f1, t1), (f2, t2)| {
-                distance_squared(f1, t1).total_cmp(&distance_squared(f2, t2))
-            })
-            .into_iter();
+        .sorted_by(|(f1, t1), (f2, t2)| {
+            distance_squared(f1, t1).total_cmp(&distance_squared(f2, t2))
+        })
+        .into_iter();
 
     let mut bimap = BiMap::new();
 
     'outer: while bimap.len() < values.len() - 1 {
-        let next_try = sorted_edge_iterator.next().expect("there should be edges left");
+        let next_try = sorted_edge_iterator
+            .next()
+            .expect("there should be edges left");
 
-        let insert = bimap.insert_no_overwrite(HashPoint(next_try.0.clone()), HashPoint(next_try.1.clone()));
-        if insert.is_err() { continue }
+        let insert =
+            bimap.insert_no_overwrite(HashPoint(next_try.0.clone()), HashPoint(next_try.1.clone()));
+        if insert.is_err() {
+            continue;
+        }
 
         // Ist next_try.0 Teil eines Zyklus? Falls ja, vorab abbrechen.
         let mut element = HashPoint(next_try.0.clone());
@@ -97,7 +102,7 @@ pub fn greedy<'a>(client: &Responder, dim: u8, values: &'a mut Vec<Vec<f32>>) {
             if next == &HashPoint(next_try.0.clone()) {
                 // Einfügen rückgängig machen
                 bimap.remove_by_left(&HashPoint(next_try.0.clone()));
-                continue 'outer
+                continue 'outer;
             }
             element = next.clone();
         }
@@ -120,7 +125,9 @@ pub fn greedy<'a>(client: &Responder, dim: u8, values: &'a mut Vec<Vec<f32>>) {
         min = from.clone();
     }
     path.push(min.0);
-    while let Some(to) = bimap.get_by_left(&HashPoint(path.last().expect("no item removal").clone())) {
+    while let Some(to) =
+        bimap.get_by_left(&HashPoint(path.last().expect("no item removal").clone()))
+    {
         path.push(to.0.clone());
     }
 
