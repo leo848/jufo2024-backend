@@ -6,6 +6,7 @@ use simple_websockets::{Event, EventHub, Message, Responder};
 use crate::{
     autorestart,
     error::Error,
+    graph::{Path, Points},
     integer_sort,
     path::{self, creation::PathCreation},
 };
@@ -38,7 +39,7 @@ pub enum PathMethod {
 
 impl PathMethod {
     #[inline]
-    pub fn implementation(self) -> fn(&Responder, u8, &mut Vec<Vec<f32>>) {
+    pub fn implementation(self) -> fn(&Responder, u8, Points) -> Path {
         match self {
             Self::NearestNeighbor => path::create::nearest_neighbor,
             Self::BruteForce => path::create::brute_force,

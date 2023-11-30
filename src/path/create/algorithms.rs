@@ -5,34 +5,29 @@ use bimap::BiMap;
 use itertools::Itertools;
 use simple_websockets::Responder;
 
-use super::{distance_squared, edges};
 use crate::{
-    path::{cost, creation::PathCreation, HashPoint},
+    graph::{Edges, Path, Points},
+    path::creation::PathCreation,
     typed::send,
     util::factorial,
 };
 
-#[inline]
-pub fn assert_dim(dim: u8, values: &[Vec<f32>]) {
-    assert!(values.iter().all(|s| s.len() == dim as usize))
-}
-
-pub fn nearest_neighbor(client: &Responder, dim: u8, values: &mut Vec<Vec<f32>>) {
-    assert_dim(dim, values);
-
+pub fn nearest_neighbor(client: &Responder, dim: u8, values: Points) -> Path {
     // let sleep_time = u64::min(values.len() as u64 * 500, 5000) / values.len() as u64;
 
     let mut visited = HashSet::new();
-    let mut path = vec![values[0].clone()];
+    let mut path = Path::try_new(vec![values[0].clone()], dim).expect("Provided valid value");
     while path.len() != values.len() {
         let last = &path[path.len() - 1];
-        visited.insert(HashPoint(last.clone()));
+        visited.insert(last.clone());
 
         let min = values
             .iter()
-            .filter(|&point| Not::not(visited.contains(&HashPoint(point.clone()))))
+            .filter(|&point| Not::not(visited.contains(&point)))
             .min_by(|point1, point2| {
-                distance_squared(point1, &last).total_cmp(&distance_squared(point2, &last))
+                point1
+                    .dist_squared(&last)
+                    .total_cmp(&point2.dist_squared(&last))
             })
             .expect("point was empty even though path is not full");
 
@@ -43,44 +38,34 @@ pub fn nearest_neighbor(client: &Responder, dim: u8, values: &mut Vec<Vec<f32>>)
         );
     }
 
-    *values = path;
+    path
 }
 
-pub fn brute_force(client: &Responder, dim: u8, values: &mut Vec<Vec<f32>>) {
-    assert_dim(dim, values);
-
+pub fn brute_force(client: &Responder, _dim: u8, values: Points) -> Path {
     let mut min = f32::INFINITY;
-    let mut min_permutation = values.clone();
 
     let permutation_count = factorial(values.len());
+    let mut min_permutation = values.clone();
 
-    for (i, permutation) in values
-        .clone()
-        .into_iter()
-        .permutations(values.len())
-        .enumerate()
-    {
+    for (i, permutation) in values.permutations().enumerate() {
+        let path = permutation.clone().as_path();
         send(
             client,
-            PathCreation::from_path(permutation.clone())
-                .progress(i as f32 / permutation_count as f32),
+            PathCreation::from_path(path.clone()).progress(i as f32 / permutation_count as f32),
         );
-        if cost(&permutation) < min {
-            min = cost(&permutation);
+        if path.cost() < min {
+            min = path.cost();
             min_permutation = permutation;
         }
     }
 
-    *values = min_permutation;
+    min_permutation.as_path()
 }
 
-pub fn greedy<'a>(client: &Responder, dim: u8, values: &'a mut Vec<Vec<f32>>) {
-    assert_dim(dim, &values);
-
-    let mut sorted_edge_iterator = edges(&values)
-        .sorted_by(|(f1, t1), (f2, t2)| {
-            distance_squared(f1, t1).total_cmp(&distance_squared(f2, t2))
-        })
+pub fn greedy<'a>(client: &Responder, _dim: u8, values: Points) -> Path {
+    let mut sorted_edge_iterator = values
+        .edges_iter()
+        .sorted_by(|edge1, edge2| edge1.dist_squared().total_cmp(&edge2.dist_squared()))
         .into_iter();
 
     let mut bimap = BiMap::new();
@@ -90,48 +75,40 @@ pub fn greedy<'a>(client: &Responder, dim: u8, values: &'a mut Vec<Vec<f32>>) {
             .next()
             .expect("there should be edges left");
 
-        let insert =
-            bimap.insert_no_overwrite(HashPoint(next_try.0.clone()), HashPoint(next_try.1.clone()));
+        let insert = bimap.insert_no_overwrite(next_try.from().clone(), next_try.to().clone());
         if insert.is_err() {
             continue;
         }
 
         // Ist next_try.0 Teil eines Zyklus? Falls ja, vorab abbrechen.
-        let mut element = HashPoint(next_try.0.clone());
+        let mut element = next_try.from();
         while let Some(next) = bimap.get_by_left(&element) {
-            if next == &HashPoint(next_try.0.clone()) {
+            if next == next_try.from() {
                 // Einfügen rückgängig machen
-                bimap.remove_by_left(&HashPoint(next_try.0.clone()));
+                bimap.remove_by_left(next_try.from());
                 continue 'outer;
             }
-            element = next.clone();
+            element = next;
         }
 
         send(
             client,
-            PathCreation::from_edges(
-                bimap
-                    .iter()
-                    .map(|t| (t.0.clone().0, t.1.clone().0))
-                    .collect(),
-            )
-            .progress(bimap.len() as f32 / values.len() as f32),
+            PathCreation::from_edges(Edges::from_bimap(bimap.clone()))
+                .progress(bimap.len() as f32 / values.len() as f32),
         );
     }
 
-    let mut path: Vec<Vec<f32>> = Vec::with_capacity(values.len());
-    let mut min = HashPoint(values[0].clone());
+    let mut path: Path = Path::with_capacity(values.len());
+    let mut min = &values[0];
     while let Some(from) = bimap.get_by_right(&min) {
-        min = from.clone();
+        min = from;
     }
-    path.push(min.0);
-    while let Some(to) =
-        bimap.get_by_left(&HashPoint(path.last().expect("no item removal").clone()))
-    {
-        path.push(to.0.clone());
+    path.push(min.clone());
+    while let Some(to) = bimap.get_by_left(&path[path.len() - 1]) {
+        path.push(to.clone());
     }
 
     assert_eq!(values.len(), path.len());
 
-    *values = path;
+    path
 }

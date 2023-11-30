@@ -4,6 +4,7 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
+use graph::Points;
 use simple_websockets::Responder;
 use typed::{Action, Output};
 
@@ -11,6 +12,7 @@ use crate::{path::creation::PathCreation, typed::Input};
 
 mod autorestart;
 mod error;
+mod graph;
 mod integer_sort;
 mod path;
 mod typed;
@@ -69,13 +71,14 @@ fn handle_action(action: Action, client: &Responder) {
         }
         Action::CreatePath {
             dimensions: dim,
-            mut values,
+            values,
             method,
         } => {
             let method = method.implementation();
-            method(client, dim, &mut values);
+            let points = Points::try_new_raw(values, dim).expect("should send valid data");
+            let path = method(client, dim, points);
 
-            typed::send(&client, PathCreation::done(values));
+            typed::send(&client, PathCreation::done(path));
         }
     }
 }

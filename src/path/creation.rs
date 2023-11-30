@@ -1,19 +1,22 @@
 use serde::Serialize;
 
-use crate::Output;
+use crate::{
+    graph::{Edges, Path},
+    Output,
+};
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PathCreation {
     #[serde(skip_serializing_if = "Option::is_none")]
-    done_path: Option<Vec<Vec<f32>>>,
-    current_edges: Vec<(Vec<f32>, Vec<f32>)>,
+    done_path: Option<Path>,
+    current_edges: Edges,
     #[serde(skip_serializing_if = "Option::is_none")]
     progress: Option<f32>,
 }
 
 impl PathCreation {
-    pub fn from_edges(edges: Vec<(Vec<f32>, Vec<f32>)>) -> Self {
+    pub fn from_edges(edges: Edges) -> Self {
         Self {
             current_edges: edges,
             done_path: None,
@@ -21,18 +24,18 @@ impl PathCreation {
         }
     }
 
-    pub fn from_path(path: Vec<Vec<f32>>) -> Self {
+    pub fn from_path(path: Path) -> Self {
         Self {
-            current_edges: super::path_to_edges(&path),
+            current_edges: path.to_edges(),
             done_path: None,
             progress: None,
         }
     }
 
-    pub fn done(path: Vec<Vec<f32>>) -> Self {
+    pub fn done(path: Path) -> Self {
         Self {
-            current_edges: super::path_to_edges(&path),
-            done_path: Some(path),
+            done_path: Some(path.clone()),
+            current_edges: path.to_edges(),
             progress: Some(1.0),
         }
     }
