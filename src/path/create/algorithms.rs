@@ -47,15 +47,20 @@ pub fn brute_force(client: &Responder, _dim: u8, values: Points) -> Path {
     let permutation_count = factorial(values.len());
     let mut min_permutation = values.clone();
 
+    let send_every = permutation_count.next_power_of_two() >> 5;
+
     for (i, permutation) in values.permutations().enumerate() {
         let path = permutation.clone().as_path();
-        send(
-            client,
-            PathCreation::from_path(path.clone()).progress(i as f32 / permutation_count as f32),
-        );
-        if path.cost() < min {
-            min = path.cost();
+        let cost = path.cost();
+        if cost < min {
+            min = cost;
             min_permutation = permutation;
+        }
+        if ((i & (send_every - 1)) == 0) || cost < min {
+            send(
+                client,
+                PathCreation::from_path(min_permutation.clone().as_path()).progress(i as f32 / permutation_count as f32),
+            );
         }
     }
 
