@@ -106,6 +106,10 @@ impl Path {
         Self(Vec::with_capacity(cap))
     }
 
+    pub fn into_inner(self) -> Vec<Point> {
+        self.0
+    }
+
     pub fn cost(&self) -> Scalar {
         self.0.windows(2).map(|s| s[0].dist(&s[1])).sum()
     }
@@ -169,6 +173,10 @@ pub struct Edges(Vec<Edge>);
 impl Edges {
     pub fn from_bimap(map: BiMap<Point, Point>) -> Self {
         map.into_iter().map(|(from, to)| Edge(from, to)).collect()
+    }
+
+    pub fn into_iter(self) -> impl Iterator<Item=Edge> {
+        self.0.into_iter()
     }
 }
 
