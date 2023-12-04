@@ -8,7 +8,7 @@ use crate::{
     error::Error,
     graph::{Path, Points},
     integer_sort,
-    path::{self, creation::PathCreation},
+    path::{self, creation::PathCreation, improvement::PathImprovement},
 };
 
 #[derive(Deserialize, Debug, Clone, Copy)]
@@ -48,6 +48,23 @@ impl PathMethod {
     }
 }
 
+#[derive(Deserialize, Debug, Clone, Copy)]
+#[serde(tag = "type", rename_all = "camelCase")]
+pub enum ImproveMethod {
+    Rotate,
+    TwoOpt,
+}
+
+impl ImproveMethod {
+    #[inline]
+    pub fn implementation(self) -> fn(&Responder, u8, Path) -> Path {
+        match self {
+            Self::Rotate => path::improve::rotate,
+            Self::TwoOpt => path::improve::two_opt,
+        }
+    }
+}
+
 #[derive(Deserialize, Debug, Clone)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum Action {
@@ -59,6 +76,11 @@ pub enum Action {
         dimensions: u8,
         values: Vec<Vec<f32>>,
         method: PathMethod,
+    },
+    ImprovePath {
+        dimensions: u8,
+        path: Vec<Vec<f32>>,
+        method: ImproveMethod,
     },
 }
 
@@ -93,6 +115,7 @@ pub enum Output {
         highlight: Vec<(usize, Highlight)>,
     },
     PathCreation(PathCreation),
+    PathImprovement(PathImprovement),
     #[serde(rename_all = "camelCase")]
     Latency {
         time_millis: u128,

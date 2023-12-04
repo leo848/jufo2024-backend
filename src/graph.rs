@@ -98,6 +98,10 @@ impl Path {
         (values.iter().all(|s| s.dim() == dim as usize)).then(|| Path(values))
     }
 
+    pub fn try_new_raw(values: Vec<Vec<Scalar>>, dim: u8) -> Option<Self> {
+        Self::try_new(values.into_iter().map(Point::new).collect(), dim)
+    }
+
     pub fn with_capacity(cap: usize) -> Self {
         Self(Vec::with_capacity(cap))
     }

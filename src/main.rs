@@ -8,7 +8,11 @@ use graph::Points;
 use simple_websockets::Responder;
 use typed::{Action, Output};
 
-use crate::{path::creation::PathCreation, typed::Input};
+use crate::{
+    graph::Path,
+    path::{creation::PathCreation, improvement::PathImprovement},
+    typed::Input,
+};
 
 mod autorestart;
 mod error;
@@ -79,6 +83,17 @@ fn handle_action(action: Action, client: &Responder) {
             let path = method(client, dim, points);
 
             typed::send(&client, PathCreation::done(path));
+        }
+        Action::ImprovePath {
+            dimensions: dim,
+            path,
+            method,
+        } => {
+            let method = method.implementation();
+            let old_path = Path::try_new_raw(path, dim).expect("should send valid data");
+            let improved_path = method(client, dim, old_path);
+
+            typed::send(&client, PathImprovement::from_path(improved_path).done())
         }
     }
 }

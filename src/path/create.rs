@@ -59,7 +59,8 @@ pub fn brute_force(client: &Responder, _dim: u8, values: Points) -> Path {
         if ((i & (send_every - 1)) == 0) || cost < min {
             send(
                 client,
-                PathCreation::from_path(min_permutation.clone().as_path()).progress(i as f32 / permutation_count as f32),
+                PathCreation::from_path(min_permutation.clone().as_path())
+                    .progress(i as f32 / permutation_count as f32),
             );
         }
     }
