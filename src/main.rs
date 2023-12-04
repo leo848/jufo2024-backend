@@ -91,7 +91,9 @@ fn handle_action(action: Action, client: &Responder) {
         } => {
             let method = method.implementation();
             let old_path = Path::try_new_raw(path, dim).expect("should send valid data");
-            let improved_path = method(client, dim, old_path);
+            let improved_path = method(client, dim, old_path.clone());
+            println!("{:?}", &old_path);
+            println!("-> {:?}", &improved_path);
 
             typed::send(&client, PathImprovement::from_path(improved_path).done())
         }
