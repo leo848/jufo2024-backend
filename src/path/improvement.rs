@@ -2,14 +2,9 @@ use serde::Serialize;
 
 use crate::{graph::Path, Output};
 
-fn is_false(b: &bool) -> bool {
-    !b
-}
-
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PathImprovement {
-    #[serde(skip_serializing_if = "is_false")]
     done: bool,
     current_path: Path,
     #[serde(skip_serializing_if = "Option::is_none")]

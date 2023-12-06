@@ -138,6 +138,12 @@ impl<Idx: SliceIndex<[Point], Output = Point>> Index<Idx> for Path {
     }
 }
 
+impl AsMut<[Point]> for Path {
+    fn as_mut(&mut self) -> &mut [Point] {
+        self.0.as_mut()
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Edge(Point, Point);
 
