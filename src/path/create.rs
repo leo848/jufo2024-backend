@@ -6,7 +6,7 @@ use itertools::Itertools;
 use simple_websockets::Responder;
 
 use crate::{
-    graph::{Edges, Path, Points},
+    graph::{Cost, Edges, Path, Points},
     path::creation::PathCreation,
     typed::send,
     util::factorial,
@@ -34,11 +34,7 @@ pub fn nearest_neighbor(client: &Responder, dim: u8, values: Points) -> Path {
         let min = values
             .iter()
             .filter(|&point| Not::not(visited.contains(&point)))
-            .min_by(|point1, point2| {
-                point1
-                    .dist_squared(&last)
-                    .total_cmp(&point2.dist_squared(&last))
-            })
+            .min_by_key(|point| point.dist_squared(&last))
             .expect("point was empty even though path is not full");
 
         path.push(min.clone());
@@ -52,7 +48,7 @@ pub fn nearest_neighbor(client: &Responder, dim: u8, values: Points) -> Path {
 }
 
 pub fn brute_force(client: &Responder, _dim: u8, values: Points) -> Path {
-    let mut min = f32::INFINITY;
+    let mut min = Cost::new(f32::INFINITY);
 
     let permutation_count = factorial(values.len());
     let mut min_permutation = values.clone();
@@ -81,7 +77,7 @@ pub fn brute_force(client: &Responder, _dim: u8, values: Points) -> Path {
 pub fn greedy<'a>(client: &Responder, _dim: u8, values: Points) -> Path {
     let mut sorted_edge_iterator = values
         .edges_iter()
-        .sorted_by(|edge1, edge2| edge1.dist_squared().total_cmp(&edge2.dist_squared()))
+        .sorted_by_key(|edge1| edge1.dist_squared())
         .into_iter();
 
     let mut bimap = BiMap::new();

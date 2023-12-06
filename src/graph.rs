@@ -1,9 +1,47 @@
-use core::{hash::Hash, ops::Index};
+use core::{hash::Hash, iter::Sum, ops::Index};
 use std::slice::SliceIndex;
 
 use bimap::BiMap;
 use itertools::Itertools;
 use serde::Serialize;
+
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Serialize)]
+pub struct Cost(f32);
+
+impl Cost {
+    pub fn new(value: f32) -> Self {
+        Cost(value)
+    }
+
+    pub fn sqrt(self) -> Self {
+        Self(self.0.sqrt())
+    }
+}
+
+impl Eq for Cost {}
+
+impl Ord for Cost {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.total_cmp(&other.0)
+    }
+}
+impl Hash for Cost {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.0.to_bits().hash(state);
+    }
+}
+
+impl Sum<f32> for Cost {
+    fn sum<I: Iterator<Item = f32>>(iter: I) -> Self {
+        Self(f32::sum(iter))
+    }
+}
+
+impl Sum<Cost> for Cost {
+    fn sum<I: Iterator<Item = Cost>>(iter: I) -> Self {
+        Self::sum(iter.map(|cost| cost.0))
+    }
+}
 
 type Scalar = f32;
 
@@ -29,7 +67,7 @@ impl Point {
         self.0.len()
     }
 
-    pub fn dist_squared(&self, other: &Point) -> Scalar {
+    pub fn dist_squared(&self, other: &Point) -> Cost {
         self.0
             .iter()
             .zip(&other.0)
@@ -37,7 +75,7 @@ impl Point {
             .sum()
     }
 
-    pub fn dist(&self, other: &Point) -> Scalar {
+    pub fn dist(&self, other: &Point) -> Cost {
         self.dist_squared(other).sqrt()
     }
 }
@@ -110,7 +148,7 @@ impl Path {
         self.0
     }
 
-    pub fn cost(&self) -> Scalar {
+    pub fn cost(&self) -> Cost {
         self.0.windows(2).map(|s| s[0].dist(&s[1])).sum()
     }
 
@@ -156,11 +194,11 @@ impl Edge {
         Self(from, to)
     }
 
-    pub fn dist_squared(&self) -> Scalar {
+    pub fn dist_squared(&self) -> Cost {
         Point::dist_squared(&self.0, &self.1)
     }
 
-    pub fn dist(&self) -> Scalar {
+    pub fn dist(&self) -> Cost {
         self.dist_squared().sqrt()
     }
 
@@ -181,7 +219,7 @@ impl Edges {
         map.into_iter().map(|(from, to)| Edge(from, to)).collect()
     }
 
-    pub fn into_iter(self) -> impl Iterator<Item=Edge> {
+    pub fn into_iter(self) -> impl Iterator<Item = Edge> {
         self.0.into_iter()
     }
 }
