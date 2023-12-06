@@ -31,16 +31,20 @@ impl Algorithm {
 
 #[derive(Deserialize, Debug, Clone, Copy)]
 #[serde(tag = "type", rename_all = "camelCase")]
-pub enum PathMethod {
+pub enum CreateMethod {
+    Transmute,
+    Random,
     NearestNeighbor,
     BruteForce,
     Greedy,
 }
 
-impl PathMethod {
+impl CreateMethod {
     #[inline]
     pub fn implementation(self) -> fn(&Responder, u8, Points) -> Path {
         match self {
+            Self::Transmute => path::create::transmute,
+            Self::Random => path::create::random,
             Self::NearestNeighbor => path::create::nearest_neighbor,
             Self::BruteForce => path::create::brute_force,
             Self::Greedy => path::create::greedy,
@@ -75,7 +79,7 @@ pub enum Action {
     CreatePath {
         dimensions: u8,
         values: Vec<Vec<f32>>,
-        method: PathMethod,
+        method: CreateMethod,
     },
     ImprovePath {
         dimensions: u8,

@@ -12,6 +12,16 @@ use crate::{
     util::factorial,
 };
 
+pub fn random(_client: &Responder, _dim: u8, values: Points) -> Path {
+    let mut path = values.as_path();
+    fastrand::shuffle(&mut path.as_mut());
+    path
+}
+
+pub fn transmute(_client: &Responder, _dim: u8, values: Points) -> Path {
+    values.as_path()
+}
+
 pub fn nearest_neighbor(client: &Responder, dim: u8, values: Points) -> Path {
     // let sleep_time = u64::min(values.len() as u64 * 500, 5000) / values.len() as u64;
 
