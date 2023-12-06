@@ -10,7 +10,6 @@ pub fn rotate(_client: &Responder, dim: u8, old_path: Path) -> Path {
         let len = new_path.len();
         // So rotieren, dass min_idx auf -1 liegt.
         let left = (max_idx +1) % len;
-        dbg!(len, left);
         new_path.rotate_left(left);
         Path::try_new(new_path, dim).unwrap()
     } else {
