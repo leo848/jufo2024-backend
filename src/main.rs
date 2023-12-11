@@ -1,6 +1,10 @@
 #![warn(clippy::all)]
 #![warn(clippy::pedantic)]
 
+#![allow(clippy::needless_pass_by_value)]
+#![allow(clippy::cast_precision_loss)]
+#![allow(clippy::module_name_repetitions)]
+
 use std::{
     collections::HashMap,
     thread,
@@ -28,12 +32,12 @@ mod util;
 const PORT: u16 = 3141;
 
 fn sleep_ms(ms: u64) {
-    thread::sleep(Duration::from_millis(ms))
+    thread::sleep(Duration::from_millis(ms));
 }
 
 fn main() {
     let event_hub =
-        simple_websockets::launch(PORT).expect(&format!("failed to listen on port {PORT}"));
+        simple_websockets::launch(PORT).unwrap_or_else(|_| panic!("failed to listen on port {PORT}"));
     println!("Listening on port {PORT}");
 
     let mut clients: HashMap<u64, Responder> = HashMap::new();
@@ -52,7 +56,7 @@ fn main() {
                     .duration_since(UNIX_EPOCH)
                     .expect("Time went backwards")
                     .as_millis();
-                typed::send(&client, Output::Latency { time_millis })
+                typed::send(&client, Output::Latency { time_millis });
             }
         }
     }
@@ -68,7 +72,7 @@ fn handle_action(action: Action, client: &Responder) {
             method(client, &mut numbers);
 
             typed::send(
-                &client,
+                client,
                 Output::SortedNumbers {
                     done: true,
                     numbers,
@@ -85,7 +89,7 @@ fn handle_action(action: Action, client: &Responder) {
             let points = Points::try_new_raw(values, dim).expect("should send valid data");
             let path = method(client, dim, points);
 
-            typed::send(&client, PathCreation::done(path));
+            typed::send(client, PathCreation::done(path));
         }
         Action::ImprovePath {
             dimensions: dim,
@@ -96,7 +100,7 @@ fn handle_action(action: Action, client: &Responder) {
             let old_path = Path::try_new_raw(path, dim).expect("should send valid data");
             let improved_path = method(client, dim, old_path.clone());
 
-            typed::send(&client, PathImprovement::from_path(improved_path).done())
+            typed::send(client, PathImprovement::from_path(improved_path).done());
         }
     }
 }

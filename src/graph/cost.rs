@@ -1,7 +1,7 @@
 use core::{hash::Hash, iter::Sum};
 use serde::Serialize;
 
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize)]
 pub struct Cost(f32);
 
 impl Cost {
@@ -15,6 +15,12 @@ impl Cost {
 }
 
 impl Eq for Cost {}
+
+impl PartialOrd for Cost {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
 
 impl Ord for Cost {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {

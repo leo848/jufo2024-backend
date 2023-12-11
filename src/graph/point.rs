@@ -1,5 +1,5 @@
 use core::{hash::Hash, ops::Index};
-use std::slice::SliceIndex;
+use std::{slice::SliceIndex, ops::Not};
 use crate::graph::{Scalar, Cost, Path, Edge};
 
 use itertools::Itertools;
@@ -46,8 +46,8 @@ pub struct Points(Vec<Point>);
 
 impl Points {
     pub fn try_new(points: Vec<Point>, dim: u8) -> Option<Self> {
-        (points.len() >= 1 && points.iter().all(|s| s.dim() == dim as usize))
-            .then(|| Points(points))
+        (points.is_empty().not() && points.iter().all(|s| s.dim() == dim as usize))
+            .then_some(Points(points))
     }
 
     pub fn try_new_raw(values: Vec<Vec<Scalar>>, dim: u8) -> Option<Self> {
@@ -59,8 +59,8 @@ impl Points {
         self.0.into_iter().permutations(len).map(Points)
     }
 
-    pub fn as_path(self) -> Path {
-        let dim = self[0].dim() as u8;
+    pub fn into_path(self) -> Path {
+        let dim = self[0].dim().try_into().expect("dimension too high");
         Path::try_new(self.0, dim).expect("Already validated")
     }
 

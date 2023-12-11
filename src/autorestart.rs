@@ -28,5 +28,5 @@ pub fn update() {
         Command::new("cargo").arg("run").exec();
     }
 
-    HASH.store(hash, Ordering::Relaxed)
+    HASH.store(hash, Ordering::Relaxed);
 }

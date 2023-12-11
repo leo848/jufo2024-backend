@@ -7,7 +7,7 @@ use crate::{
 };
 
 pub fn rotate(_client: &Responder, dim: u8, old_path: Path) -> Path {
-    let edges = old_path.clone().to_edges();
+    let edges = old_path.clone().into_edges();
     let (max_idx, max_edge) = edges
         .into_iter()
         .enumerate()
@@ -27,12 +27,12 @@ pub fn rotate(_client: &Responder, dim: u8, old_path: Path) -> Path {
 }
 
 pub fn two_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
-    let mut path = old_path.clone();
-
     fn two_opt_swap(path: &mut Path, v1: usize, v2: usize) {
         let path = path.as_mut();
         path[v1 + 1..v2].reverse();
     }
+
+    let mut path = old_path.clone();
 
     let mut improvement = true;
     let mut best_cost = path.cost();
@@ -48,9 +48,8 @@ pub fn two_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
                     best_cost = new_cost;
                     send(client, PathImprovement::from_path(path.clone()));
                     continue 'improvin;
-                } else {
-                    two_opt_swap(&mut path, i, j);
                 }
+                two_opt_swap(&mut path, i, j);
             }
         }
     }

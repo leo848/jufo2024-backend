@@ -14,17 +14,17 @@ use crate::{
 #[derive(Deserialize, Debug, Clone, Copy)]
 #[serde(rename_all = "camelCase")]
 pub enum IntegerSortAlgorithm {
-    BubbleSort,
-    SelectionSort,
-    InsertionSort,
+    Bubble,
+    Selection,
+    Insertion,
 }
 
 impl IntegerSortAlgorithm {
     pub fn implementation(self) -> fn(&Responder, &mut [u64]) {
         match self {
-            Self::BubbleSort => integer_sort::bubble,
-            Self::InsertionSort => integer_sort::insertion,
-            Self::SelectionSort => integer_sort::selection,
+            Self::Bubble => integer_sort::bubble,
+            Self::Insertion => integer_sort::insertion,
+            Self::Selection => integer_sort::selection,
         }
     }
 }
@@ -188,5 +188,5 @@ pub fn send(client: &Responder, message: impl Into<Output>) {
 }
 
 pub fn error(client: &Responder, error: Error) {
-    send(client, Output::Error { error })
+    send(client, Output::Error { error });
 }

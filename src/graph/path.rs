@@ -9,7 +9,7 @@ pub struct Path(Vec<Point>);
 
 impl Path {
     pub fn try_new(values: Vec<Point>, dim: u8) -> Option<Self> {
-        (values.iter().all(|s| s.dim() == dim as usize)).then(|| Path(values))
+        (values.iter().all(|s| s.dim() == dim as usize)).then_some(Path(values))
     }
 
     pub fn try_new_raw(values: Vec<Vec<Scalar>>, dim: u8) -> Option<Self> {
@@ -28,7 +28,7 @@ impl Path {
         self.0.windows(2).map(|s| s[0].dist(&s[1])).sum()
     }
 
-    pub fn to_edges(self) -> Edges {
+    pub fn into_edges(self) -> Edges {
         self.0
             .into_iter()
             .tuple_windows::<(_, _)>()
@@ -41,7 +41,7 @@ impl Path {
     }
 
     pub fn push(&mut self, point: Point) {
-        self.0.push(point)
+        self.0.push(point);
     }
 }
 

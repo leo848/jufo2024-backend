@@ -1,3 +1,4 @@
+use crate::graph::Edge;
 use itertools::Itertools;
 use core::ops::Not;
 use std::collections::HashSet;
@@ -13,13 +14,13 @@ use crate::{
 };
 
 pub fn random(_client: &Responder, _dim: u8, values: Points) -> Path {
-    let mut path = values.as_path();
-    fastrand::shuffle(&mut path.as_mut());
+    let mut path = values.into_path();
+    fastrand::shuffle(path.as_mut());
     path
 }
 
 pub fn transmute(_client: &Responder, _dim: u8, values: Points) -> Path {
-    values.as_path()
+    values.into_path()
 }
 
 pub fn nearest_neighbor(client: &Responder, dim: u8, values: Points) -> Path {
@@ -33,8 +34,8 @@ pub fn nearest_neighbor(client: &Responder, dim: u8, values: Points) -> Path {
 
         let min = values
             .iter()
-            .filter(|&point| Not::not(visited.contains(&point)))
-            .min_by_key(|point| point.dist_squared(&last))
+            .filter(|&point| Not::not(visited.contains(point)))
+            .min_by_key(|point| point.dist_squared(last))
             .expect("point was empty even though path is not full");
 
         path.push(min.clone());
@@ -56,7 +57,7 @@ pub fn brute_force(client: &Responder, _dim: u8, values: Points) -> Path {
     let send_every = permutation_count.next_power_of_two() >> 5;
 
     for (i, permutation) in values.permutations().enumerate() {
-        let path = permutation.clone().as_path();
+        let path = permutation.clone().into_path();
         let cost = path.cost();
         if cost < min {
             min = cost;
@@ -65,20 +66,19 @@ pub fn brute_force(client: &Responder, _dim: u8, values: Points) -> Path {
         if ((i & (send_every - 1)) == 0) || cost < min {
             send(
                 client,
-                PathCreation::from_path(min_permutation.clone().as_path())
+                PathCreation::from_path(min_permutation.clone().into_path())
                     .progress(i as f32 / permutation_count as f32),
             );
         }
     }
 
-    min_permutation.as_path()
+    min_permutation.into_path()
 }
 
-pub fn greedy<'a>(client: &Responder, _dim: u8, values: Points) -> Path {
+pub fn greedy(client: &Responder, _dim: u8, values: Points) -> Path {
     let mut sorted_edge_iterator = values
         .edges_iter()
-        .sorted_by_key(|edge1| edge1.dist_squared())
-        .into_iter();
+        .sorted_by_key(Edge::dist_squared);
 
     let mut bimap = BiMap::new();
 
@@ -94,7 +94,7 @@ pub fn greedy<'a>(client: &Responder, _dim: u8, values: Points) -> Path {
 
         // Ist next_try.0 Teil eines Zyklus? Falls ja, vorab abbrechen.
         let mut element = next_try.from();
-        while let Some(next) = bimap.get_by_left(&element) {
+        while let Some(next) = bimap.get_by_left(element) {
             if next == next_try.from() {
                 // Einfügen rückgängig machen
                 bimap.remove_by_left(next_try.from());
@@ -112,7 +112,7 @@ pub fn greedy<'a>(client: &Responder, _dim: u8, values: Points) -> Path {
 
     let mut path: Path = Path::with_capacity(values.len());
     let mut min = &values[0];
-    while let Some(from) = bimap.get_by_right(&min) {
+    while let Some(from) = bimap.get_by_right(min) {
         min = from;
     }
     path.push(min.clone());

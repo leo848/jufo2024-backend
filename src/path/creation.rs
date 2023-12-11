@@ -26,7 +26,7 @@ impl PathCreation {
 
     pub fn from_path(path: Path) -> Self {
         Self {
-            current_edges: path.to_edges(),
+            current_edges: path.into_edges(),
             done_path: None,
             progress: None,
         }
@@ -35,7 +35,7 @@ impl PathCreation {
     pub fn done(path: Path) -> Self {
         Self {
             done_path: Some(path.clone()),
-            current_edges: path.to_edges(),
+            current_edges: path.into_edges(),
             progress: Some(1.0),
         }
     }
