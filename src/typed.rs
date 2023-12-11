@@ -37,6 +37,7 @@ pub enum PathCreateMethod {
     NearestNeighbor,
     BruteForce,
     Greedy,
+    Christofides,
 }
 
 impl PathCreateMethod {
@@ -48,6 +49,7 @@ impl PathCreateMethod {
             Self::NearestNeighbor => path::create::nearest_neighbor,
             Self::BruteForce => path::create::brute_force,
             Self::Greedy => path::create::greedy,
+            Self::Christofides => path::create::christofides,
         }
     }
 }

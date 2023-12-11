@@ -2,7 +2,6 @@ use core::ops::Not;
 use std::collections::HashSet;
 
 use bimap::BiMap;
-use itertools::Itertools;
 use simple_websockets::Responder;
 
 use crate::{
@@ -123,4 +122,8 @@ pub fn greedy<'a>(client: &Responder, _dim: u8, values: Points) -> Path {
     assert_eq!(values.len(), path.len());
 
     path
+}
+
+pub fn christofides(client: &Responder, _dim: u8, values: Points) -> Path {
+    todo!()
 }
