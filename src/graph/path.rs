@@ -1,3 +1,9 @@
+use itertools::Itertools;
+use core::ops::Index;
+use core::slice::SliceIndex;
+use serde::Serialize;
+use crate::graph::{Scalar, Point, Cost, Edge, Edges};
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Path(Vec<Point>);
 

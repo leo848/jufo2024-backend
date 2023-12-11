@@ -1,6 +1,8 @@
 use bimap::BiMap;
 use serde::Serialize;
 
+use crate::graph::{Point, Cost};
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Edge(Point, Point);
 

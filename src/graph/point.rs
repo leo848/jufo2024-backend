@@ -1,5 +1,6 @@
 use core::{hash::Hash, ops::Index};
 use std::slice::SliceIndex;
+use crate::graph::{Scalar, Cost, Path, Edge};
 
 use itertools::Itertools;
 use serde::Serialize;
@@ -59,7 +60,8 @@ impl Points {
     }
 
     pub fn as_path(self) -> Path {
-        Path(self.0)
+        let dim = self[0].dim() as u8;
+        Path::try_new(self.0, dim).expect("Already validated")
     }
 
     pub fn edges_iter(&self) -> impl Iterator<Item = Edge> + '_ {
@@ -67,7 +69,7 @@ impl Points {
             .iter()
             .cartesian_product(&self.0)
             .filter(|(t, u)| t != u)
-            .map(|(p1, p2)| Edge(p1.clone(), p2.clone()))
+            .map(|(p1, p2)| Edge::new(p1.clone(), p2.clone()))
     }
 
     pub fn len(&self) -> usize {
