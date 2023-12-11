@@ -28,6 +28,7 @@ impl PathImprovement {
         }
     }
 
+    #[allow(dead_code)]
     pub fn progress(self, value: f32) -> Self {
         Self {
             progress: Some(value),

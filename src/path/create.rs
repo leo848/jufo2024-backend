@@ -125,6 +125,6 @@ pub fn greedy<'a>(client: &Responder, _dim: u8, values: Points) -> Path {
     path
 }
 
-pub fn christofides(client: &Responder, _dim: u8, values: Points) -> Path {
+pub fn christofides(_client: &Responder, _dim: u8, _values: Points) -> Path {
     todo!()
 }
