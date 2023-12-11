@@ -13,13 +13,13 @@ use crate::{
 
 #[derive(Deserialize, Debug, Clone, Copy)]
 #[serde(rename_all = "camelCase")]
-pub enum Algorithm {
+pub enum IntegerSortAlgorithm {
     BubbleSort,
     SelectionSort,
     InsertionSort,
 }
 
-impl Algorithm {
+impl IntegerSortAlgorithm {
     pub fn implementation(self) -> fn(&Responder, &mut [u64]) {
         match self {
             Self::BubbleSort => integer_sort::bubble,
@@ -31,7 +31,7 @@ impl Algorithm {
 
 #[derive(Deserialize, Debug, Clone, Copy)]
 #[serde(tag = "type", rename_all = "camelCase")]
-pub enum CreateMethod {
+pub enum PathCreateMethod {
     Transmute,
     Random,
     NearestNeighbor,
@@ -39,7 +39,7 @@ pub enum CreateMethod {
     Greedy,
 }
 
-impl CreateMethod {
+impl PathCreateMethod {
     #[inline]
     pub fn implementation(self) -> fn(&Responder, u8, Points) -> Path {
         match self {
@@ -54,12 +54,12 @@ impl CreateMethod {
 
 #[derive(Deserialize, Debug, Clone, Copy)]
 #[serde(tag = "type", rename_all = "camelCase")]
-pub enum ImproveMethod {
+pub enum PathImproveMethod {
     Rotate,
     TwoOpt,
 }
 
-impl ImproveMethod {
+impl PathImproveMethod {
     #[inline]
     pub fn implementation(self) -> fn(&Responder, u8, Path) -> Path {
         match self {
@@ -74,17 +74,17 @@ impl ImproveMethod {
 pub enum Action {
     SortNumbers {
         numbers: Vec<u64>,
-        algorithm: Algorithm,
+        algorithm: IntegerSortAlgorithm,
     },
     CreatePath {
         dimensions: u8,
         values: Vec<Vec<f32>>,
-        method: CreateMethod,
+        method: PathCreateMethod,
     },
     ImprovePath {
         dimensions: u8,
         path: Vec<Vec<f32>>,
-        method: ImproveMethod,
+        method: PathImproveMethod,
     },
 }
 
