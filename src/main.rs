@@ -1,3 +1,6 @@
+#![warn(clippy::all)]
+#![warn(clippy::pedantic)]
+
 use std::{
     collections::HashMap,
     thread,
