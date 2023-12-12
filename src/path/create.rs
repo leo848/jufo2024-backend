@@ -125,6 +125,28 @@ pub fn greedy(client: &Responder, _dim: u8, values: Points) -> Path {
     path
 }
 
-pub fn christofides(_client: &Responder, _dim: u8, _values: Points) -> Path {
+pub fn christofides(client: &Responder, _dim: u8, values: Points) -> Path {
+    let mut visited = HashSet::new();
+    let mut edges = Edges::new();
+
+    let first_vertex = values[0].clone();
+    visited.insert(first_vertex);
+
+    while visited.len() < values.len() {
+        let min_edge = values.edges_iter()
+            .filter(|edge| {
+                visited.contains(edge.from()) != visited.contains(edge.to()) // einer von beiden
+            })
+            .min_by_key(Edge::dist_squared)
+            .expect("no edges");
+
+        visited.insert(min_edge.from().clone());
+        visited.insert(min_edge.to().clone());
+        edges.push(min_edge);
+
+        send(client, PathCreation::from_edges(edges.clone()))
+    }
+
+
     todo!()
 }

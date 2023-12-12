@@ -3,7 +3,7 @@ use serde::Serialize;
 
 use crate::graph::{Point, Cost};
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
 pub struct Edge(Point, Point);
 
 impl Edge {
@@ -32,10 +32,18 @@ impl Edge {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
 pub struct Edges(Vec<Edge>);
 
 impl Edges {
+    pub fn new() -> Self {
+        Self(Vec::new())
+    }
+
+    pub fn push(&mut self, edge: Edge) {
+        self.0.push(edge);
+    }
+
     pub fn from_bimap(map: BiMap<Point, Point>) -> Self {
         map.into_iter().map(|(from, to)| Edge(from, to)).collect()
     }
