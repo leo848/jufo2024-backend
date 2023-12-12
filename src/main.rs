@@ -1,6 +1,5 @@
 #![warn(clippy::all)]
 #![warn(clippy::pedantic)]
-
 #![allow(clippy::needless_pass_by_value)]
 #![allow(clippy::cast_precision_loss)]
 #![allow(clippy::module_name_repetitions)]
@@ -36,8 +35,8 @@ fn sleep_ms(ms: u64) {
 }
 
 fn main() {
-    let event_hub =
-        simple_websockets::launch(PORT).unwrap_or_else(|_| panic!("failed to listen on port {PORT}"));
+    let event_hub = simple_websockets::launch(PORT)
+        .unwrap_or_else(|_| panic!("failed to listen on port {PORT}"));
     println!("Listening on port {PORT}");
 
     let mut clients: HashMap<u64, Responder> = HashMap::new();

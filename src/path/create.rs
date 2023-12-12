@@ -1,13 +1,12 @@
-use crate::graph::Edge;
-use itertools::Itertools;
 use core::ops::Not;
 use std::collections::HashSet;
 
 use bimap::BiMap;
+use itertools::Itertools;
 use simple_websockets::Responder;
 
 use crate::{
-    graph::{Cost, Edges, Path, Points},
+    graph::{Cost, Edge, Edges, Path, Points},
     path::creation::PathCreation,
     typed::send,
     util::factorial,
@@ -76,9 +75,7 @@ pub fn brute_force(client: &Responder, _dim: u8, values: Points) -> Path {
 }
 
 pub fn greedy(client: &Responder, _dim: u8, values: Points) -> Path {
-    let mut sorted_edge_iterator = values
-        .edges_iter()
-        .sorted_by_key(Edge::dist_squared);
+    let mut sorted_edge_iterator = values.edges_iter().sorted_by_key(Edge::dist_squared);
 
     let mut bimap = BiMap::new();
 
@@ -133,7 +130,8 @@ pub fn christofides(client: &Responder, _dim: u8, values: Points) -> Path {
     visited.insert(first_vertex);
 
     while visited.len() < values.len() {
-        let min_edge = values.edges_iter()
+        let min_edge = values
+            .edges_iter()
             .filter(|edge| {
                 visited.contains(edge.from()) != visited.contains(edge.to()) // einer von beiden
             })
@@ -146,7 +144,6 @@ pub fn christofides(client: &Responder, _dim: u8, values: Points) -> Path {
 
         send(client, PathCreation::from_edges(edges.clone()))
     }
-
 
     todo!()
 }

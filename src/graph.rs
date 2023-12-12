@@ -1,11 +1,11 @@
 mod cost;
-mod scalar;
-mod point;
-mod path;
 mod edge;
+mod path;
+mod point;
+mod scalar;
 
 pub use cost::Cost;
-pub use scalar::Scalar;
-pub use point::{Point, Points};
 pub use edge::{Edge, Edges};
 pub use path::Path;
+pub use point::{Point, Points};
+pub use scalar::Scalar;

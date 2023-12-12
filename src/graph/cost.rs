@@ -1,4 +1,5 @@
 use core::{hash::Hash, iter::Sum};
+
 use serde::Serialize;
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize)]
@@ -44,4 +45,3 @@ impl Sum<Cost> for Cost {
         Self::sum(iter.map(|cost| cost.0))
     }
 }
-

@@ -1,8 +1,9 @@
+use core::{ops::Index, slice::SliceIndex};
+
 use itertools::Itertools;
-use core::ops::Index;
-use core::slice::SliceIndex;
 use serde::Serialize;
-use crate::graph::{Scalar, Point, Cost, Edge, Edges};
+
+use crate::graph::{Cost, Edge, Edges, Point, Scalar};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Path(Vec<Point>);
@@ -57,4 +58,3 @@ impl AsMut<[Point]> for Path {
         self.0.as_mut()
     }
 }
-

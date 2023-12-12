@@ -1,9 +1,10 @@
 use core::{hash::Hash, ops::Index};
-use std::{slice::SliceIndex, ops::Not};
-use crate::graph::{Scalar, Cost, Path, Edge};
+use std::{ops::Not, slice::SliceIndex};
 
 use itertools::Itertools;
 use serde::Serialize;
+
+use crate::graph::{Cost, Edge, Path, Scalar};
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Point(Vec<Scalar>);
 
@@ -87,4 +88,3 @@ impl<Idx: SliceIndex<[Point], Output = Point>> Index<Idx> for Points {
         &self.0[index]
     }
 }
-
