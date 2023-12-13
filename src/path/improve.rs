@@ -44,14 +44,16 @@ pub fn two_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
                 two_opt_swap(&mut path, i, j);
                 let new_cost = path.cost();
                 if new_cost < best_cost {
-                    improvement = true;
-                    best_cost = new_cost;
                     send(
                         client,
                         PathImprovement::from_path(path.clone()).progress(
                             (i * path.len() + j) as f32 / ((path.len()) * path.len()) as f32,
                         ),
                     );
+                }
+                if new_cost < best_cost {
+                    improvement = true;
+                    best_cost = new_cost;
                     continue 'improvin;
                 }
                 two_opt_swap(&mut path, i, j);
@@ -94,16 +96,18 @@ pub fn three_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
                     for method in 0..=3 {
                         path = three_opt_swap(path, method, i, j, k);
                         let new_cost = path.cost();
-                        if new_cost < best_cost {
-                            improvement = true;
-                            best_cost = new_cost;
+                        if new_cost < best_cost || (k == j + 2 && j == i + 2) {
                             send(
                                 client,
                                 PathImprovement::from_path(path.clone()).progress(
-                                    (i * path.len() * path.len() + j * path.len() + k) as f32
-                                        / (path.len() * path.len() * path.len()) as f32,
+                                    (i * path.len() + j) as f32
+                                        / ((path.len()) * path.len()) as f32,
                                 ),
                             );
+                        }
+                        if new_cost < best_cost {
+                            improvement = true;
+                            best_cost = new_cost;
                             continue 'improvin;
                         } else {
                             save_path.clone_into(&mut path);
