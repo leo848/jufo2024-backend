@@ -58,12 +58,19 @@ pub fn two_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
 }
 
 pub fn three_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
-    fn three_opt_swap(path: &mut Path, method: u8, a: usize, b: usize, c: usize) {
-        let path = path.as_mut();
+    fn three_opt_swap(path: Path, method: u8, a: usize, b: usize, c: usize) -> Path {
+        let [a, c, e] = [a, b, c];
+        let [b, d, f] = [a + 1, b + 1, c + 1];
         match method {
             0 => {
-                path[c..b-1].reverse();
+                path.slice(..=a)
+                    + path.slice(b..=c).rev()
+                    + path.slice(d..=e).rev()
+                    + path.slice(f..)
             }
+            1 => path.slice(..=a) + path.slice(d..=e) + path.slice(b..=c) + path.slice(f..),
+            2 => path.slice(..=a) + path.slice(d..=e) + path.slice(c..=b).rev() + path.slice(f..),
+            3 => path.slice(..=a) + path.slice(d..=e).rev() + path.slice(c..=b) + path.slice(f..),
             _ => panic!("Wrong method"),
         }
     }
@@ -77,10 +84,10 @@ pub fn three_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
         improvement = false;
         let save_path = path.clone();
         for i in 0..path.len() - 2 {
-            for j in i + 1 .. path.len() - 1 {
-                for k in j + 1 .. path.len() {
-                    for method in 0..1 {
-                        three_opt_swap(&mut path, method, i, j, k);
+            for j in i + 1..path.len() - 1 {
+                for k in j + 1..path.len() {
+                    for method in 0..=3 {
+                        path = three_opt_swap(path, method, i, j, k);
                         let new_cost = path.cost();
                         if new_cost < best_cost {
                             improvement = true;
@@ -96,5 +103,5 @@ pub fn three_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
         }
     }
 
-    todo!()
+    path
 }

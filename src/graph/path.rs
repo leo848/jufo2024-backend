@@ -1,4 +1,5 @@
 use core::{ops::Index, slice::SliceIndex};
+use std::ops::Add;
 
 use itertools::Itertools;
 use serde::Serialize;
@@ -44,10 +45,40 @@ impl Path {
     pub fn push(&mut self, point: Point) {
         self.0.push(point);
     }
+
+    pub fn into_slice(self, range: impl SliceIndex<[Point], Output = [Point]>) -> Path {
+        Path(self.0[range].to_vec())
+    }
+
+    pub fn slice(&self, range: impl SliceIndex<[Point], Output = [Point]>) -> Path {
+        self.clone().into_slice(range)
+    }
+
+    pub fn rev(mut self) -> Path {
+        self.0.reverse();
+        self
+    }
 }
 
-impl<Idx: SliceIndex<[Point], Output = Point>> Index<Idx> for Path {
-    type Output = Point;
+impl Add<&Path> for Path {
+    type Output = Path;
+
+    fn add(mut self, rhs: &Self) -> Self::Output {
+        self.0.extend_from_slice(&rhs.0);
+        self
+    }
+}
+
+impl Add for Path {
+    type Output = Path;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        self + &rhs
+    }
+}
+
+impl<Output: ?Sized, Idx: SliceIndex<[Point], Output = Output>> Index<Idx> for Path {
+    type Output = <Idx as SliceIndex<[Point]>>::Output;
     fn index(&self, index: Idx) -> &Self::Output {
         &self.0[index]
     }
