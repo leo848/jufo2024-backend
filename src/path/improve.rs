@@ -56,3 +56,45 @@ pub fn two_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
 
     path
 }
+
+pub fn three_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
+    fn three_opt_swap(path: &mut Path, method: u8, a: usize, b: usize, c: usize) {
+        let path = path.as_mut();
+        match method {
+            0 => {
+                path[c..b-1].reverse();
+            }
+            _ => panic!("Wrong method"),
+        }
+    }
+
+    let mut path = old_path.clone();
+
+    let mut improvement = true;
+    let mut best_cost = path.cost();
+
+    'improvin: while improvement {
+        improvement = false;
+        let save_path = path.clone();
+        for i in 0..path.len() - 2 {
+            for j in i + 1 .. path.len() - 1 {
+                for k in j + 1 .. path.len() {
+                    for method in 0..1 {
+                        three_opt_swap(&mut path, method, i, j, k);
+                        let new_cost = path.cost();
+                        if new_cost < best_cost {
+                            improvement = true;
+                            best_cost = new_cost;
+                            send(client, PathImprovement::from_path(path.clone()));
+                            continue 'improvin;
+                        } else {
+                            save_path.clone_into(&mut path);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    todo!()
+}

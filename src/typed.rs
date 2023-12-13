@@ -59,6 +59,7 @@ impl PathCreateMethod {
 pub enum PathImproveMethod {
     Rotate,
     TwoOpt,
+    ThreeOpt,
 }
 
 impl PathImproveMethod {
@@ -67,6 +68,7 @@ impl PathImproveMethod {
         match self {
             Self::Rotate => path::improve::rotate,
             Self::TwoOpt => path::improve::two_opt,
+            Self::ThreeOpt => path::improve::three_opt,
         }
     }
 }
