@@ -47,8 +47,8 @@ fn main() {
             Input::Log { message } => {
                 eprintln!("Message: {message}");
             }
-            Input::Action { action } => {
-                handle_action(action, &client);
+            Input::Action { action, latency } => {
+                handle_action(action, latency, &client);
             }
             Input::Latency => {
                 let time_millis = SystemTime::now()
@@ -61,7 +61,10 @@ fn main() {
     }
 }
 
-fn handle_action(action: Action, client: &Responder) {
+fn handle_action(action: Action, latency: u64, client: &Responder) {
+    if latency != 0 {
+        todo!();
+    }
     match action {
         Action::SortNumbers {
             mut numbers,

@@ -95,8 +95,14 @@ pub enum Action {
 #[derive(Deserialize, Debug, Clone)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum Input {
-    Log { message: String },
-    Action { action: Action },
+    Log {
+        message: String,
+    },
+    Action {
+        action: Action,
+        #[serde(default)]
+        latency: u64,
+    },
     Latency,
 }
 
