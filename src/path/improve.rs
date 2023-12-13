@@ -46,7 +46,12 @@ pub fn two_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
                 if new_cost < best_cost {
                     improvement = true;
                     best_cost = new_cost;
-                    send(client, PathImprovement::from_path(path.clone()));
+                    send(
+                        client,
+                        PathImprovement::from_path(path.clone()).progress(
+                            (i * path.len() + j) as f32 / ((path.len()) * path.len()) as f32,
+                        ),
+                    );
                     continue 'improvin;
                 }
                 two_opt_swap(&mut path, i, j);
@@ -69,8 +74,8 @@ pub fn three_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
                     + path.slice(f..)
             }
             1 => path.slice(..=a) + path.slice(d..=e) + path.slice(b..=c) + path.slice(f..),
-            2 => path.slice(..=a) + path.slice(d..=e) + path.slice(c..=b).rev() + path.slice(f..),
-            3 => path.slice(..=a) + path.slice(d..=e).rev() + path.slice(c..=b) + path.slice(f..),
+            2 => path.slice(..=a) + path.slice(d..=e) + path.slice(b..=c).rev() + path.slice(f..),
+            3 => path.slice(..=a) + path.slice(d..=e).rev() + path.slice(b..=c) + path.slice(f..),
             _ => panic!("Wrong method"),
         }
     }
@@ -83,16 +88,22 @@ pub fn three_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
     'improvin: while improvement {
         improvement = false;
         let save_path = path.clone();
-        for i in 0..path.len() - 2 {
-            for j in i + 1..path.len() - 1 {
-                for k in j + 1..path.len() {
+        for i in 0..path.len() - 4 {
+            for j in i + 2..path.len() - 2 {
+                for k in j + 2..path.len() {
                     for method in 0..=3 {
                         path = three_opt_swap(path, method, i, j, k);
                         let new_cost = path.cost();
                         if new_cost < best_cost {
                             improvement = true;
                             best_cost = new_cost;
-                            send(client, PathImprovement::from_path(path.clone()));
+                            send(
+                                client,
+                                PathImprovement::from_path(path.clone()).progress(
+                                    (i * path.len() * path.len() + j * path.len() + k) as f32
+                                        / (path.len() * path.len() * path.len()) as f32,
+                                ),
+                            );
                             continue 'improvin;
                         } else {
                             save_path.clone_into(&mut path);
