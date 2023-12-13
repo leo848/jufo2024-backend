@@ -88,3 +88,9 @@ impl<Idx: SliceIndex<[Point], Output = Point>> Index<Idx> for Points {
         &self.0[index]
     }
 }
+
+impl FromIterator<Point> for Points {
+    fn from_iter<T: IntoIterator<Item = Point>>(iter: T) -> Self {
+        Points(iter.into_iter().collect())
+    }
+}

@@ -123,6 +123,7 @@ pub fn greedy(client: &Responder, _dim: u8, values: Points) -> Path {
 }
 
 pub fn christofides(client: &Responder, _dim: u8, values: Points) -> Path {
+    // 1. Finde den MST (minimalen Baum, der alle Knoten verbindet)
     let mut visited = HashSet::new();
     let mut edges = Edges::new();
 
@@ -144,6 +145,30 @@ pub fn christofides(client: &Responder, _dim: u8, values: Points) -> Path {
 
         send(client, PathCreation::from_edges(edges.clone()))
     }
+
+    let mst = edges;
+
+    // // 2. Finde eine perfekte Paarung im Teilgraph aller Kanten ungeraden Grades
+
+    let odd_degree_vertices: Points = visited
+        .clone()
+        .into_iter()
+        .map(|point| {
+            (
+                point.clone(),
+                mst.clone()
+                    .into_iter()
+                    .filter(|contained_edge| {
+                        contained_edge.from() == &point || contained_edge.to() == &point
+                    })
+                    .count(),
+            )
+        })
+        .filter(|(_, degree)| degree % 2 == 1)
+        .map(|(point, _)| point)
+        .collect();
+
+    let _odd_degree_edges = odd_degree_vertices.edges_iter().collect::<HashSet<_>>();
 
     todo!()
 }
