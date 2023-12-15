@@ -3,27 +3,31 @@ use std::collections::HashSet;
 
 use bimap::BiMap;
 use itertools::Itertools;
-use simple_websockets::Responder;
 
 use crate::{
+    action::PathCreateContext,
     graph::{Cost, Edge, Edges, Path, Points},
     path::creation::PathCreation,
     typed::send,
     util::factorial,
 };
 
-pub fn random(_client: &Responder, _dim: u8, values: Points) -> Path {
+pub fn random(ctx: PathCreateContext) -> Path {
+    let values = ctx.points;
     let mut path = values.into_path();
     fastrand::shuffle(path.as_mut());
     path
 }
 
-pub fn transmute(_client: &Responder, _dim: u8, values: Points) -> Path {
+pub fn transmute(ctx: PathCreateContext) -> Path {
+    let values = ctx.points;
     values.into_path()
 }
 
-pub fn nearest_neighbor(client: &Responder, dim: u8, values: Points) -> Path {
-    // let sleep_time = u64::min(values.len() as u64 * 500, 5000) / values.len() as u64;
+pub fn nearest_neighbor(ctx: PathCreateContext) -> Path {
+    let values = ctx.points;
+    let dim = ctx.dim;
+    let client = &ctx.action.client;
 
     let mut visited = HashSet::new();
     let mut path = Path::try_new(vec![values[0].clone()], dim).expect("Provided valid value");
@@ -47,7 +51,10 @@ pub fn nearest_neighbor(client: &Responder, dim: u8, values: Points) -> Path {
     path
 }
 
-pub fn brute_force(client: &Responder, _dim: u8, values: Points) -> Path {
+pub fn brute_force(ctx: PathCreateContext) -> Path {
+    let values = ctx.points;
+    let client = &ctx.action.client;
+
     let mut min = Cost::new(f32::INFINITY);
 
     let permutation_count = factorial(values.len());
@@ -74,7 +81,10 @@ pub fn brute_force(client: &Responder, _dim: u8, values: Points) -> Path {
     min_permutation.into_path()
 }
 
-pub fn greedy(client: &Responder, _dim: u8, values: Points) -> Path {
+pub fn greedy(ctx: PathCreateContext) -> Path {
+    let values = ctx.points;
+    let client = &ctx.action.client;
+
     let mut sorted_edge_iterator = values.edges_iter().sorted_by_key(Edge::dist_squared);
 
     let mut bimap = BiMap::new();
@@ -122,7 +132,10 @@ pub fn greedy(client: &Responder, _dim: u8, values: Points) -> Path {
     path
 }
 
-pub fn christofides(client: &Responder, _dim: u8, values: Points) -> Path {
+pub fn christofides(ctx: PathCreateContext) -> Path {
+    let values = ctx.points;
+    let client = &ctx.action.client;
+
     // 1. Finde den MST (minimalen Baum, der alle Knoten verbindet)
     let mut visited = HashSet::new();
     let mut edges = Edges::new();

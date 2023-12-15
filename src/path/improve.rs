@@ -1,12 +1,14 @@
-use simple_websockets::Responder;
-
 use crate::{
+    action::PathImproveContext,
     graph::{Edge, Path},
     path::improvement::PathImprovement,
     typed::send,
 };
 
-pub fn rotate(_client: &Responder, dim: u8, old_path: Path) -> Path {
+pub fn rotate(ctx: PathImproveContext) -> Path {
+    let old_path = ctx.path;
+    let dim = ctx.dim;
+
     let edges = old_path.clone().into_edges();
     let (max_idx, max_edge) = edges
         .into_iter()
@@ -26,7 +28,10 @@ pub fn rotate(_client: &Responder, dim: u8, old_path: Path) -> Path {
     }
 }
 
-pub fn two_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
+pub fn two_opt(ctx: PathImproveContext) -> Path {
+    let old_path = ctx.path;
+    let client = &ctx.action.client;
+
     fn two_opt_swap(path: &mut Path, v1: usize, v2: usize) {
         let path = path.as_mut();
         path[v1 + 1..v2].reverse();
@@ -64,7 +69,7 @@ pub fn two_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
     path
 }
 
-pub fn three_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
+pub fn three_opt(ctx: PathImproveContext) -> Path {
     fn three_opt_swap(path: Path, method: u8, a: usize, b: usize, c: usize) -> Path {
         let [a, c, e] = [a, b, c];
         let [b, d, f] = [a + 1, b + 1, c + 1];
@@ -82,7 +87,8 @@ pub fn three_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
         }
     }
 
-    let mut path = old_path.clone();
+    let client = &ctx.action.client;
+    let mut path = ctx.path;
 
     let mut improvement = true;
     let mut best_cost = path.cost();
@@ -99,10 +105,12 @@ pub fn three_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
                         if new_cost < best_cost || (k == j + 2 && j == i + 2) {
                             send(
                                 client,
-                                PathImprovement::from_path(path.clone()).progress(
-                                    (i * path.len() + j) as f32
-                                        / ((path.len()) * path.len()) as f32,
-                                ).better(new_cost < best_cost),
+                                PathImprovement::from_path(path.clone())
+                                    .progress(
+                                        (i * path.len() + j) as f32
+                                            / ((path.len()) * path.len()) as f32,
+                                    )
+                                    .better(new_cost < best_cost),
                             );
                         }
                         if new_cost < best_cost {

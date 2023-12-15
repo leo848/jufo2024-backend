@@ -4,9 +4,10 @@ use serde::{Deserialize, Serialize};
 use simple_websockets::{Event, EventHub, Message, Responder};
 
 use crate::{
+    action::{PathCreateContext, PathImproveContext},
     autorestart,
     error::Error,
-    graph::{Path, Points},
+    graph::Path,
     integer_sort,
     path::{self, creation::PathCreation, improvement::PathImprovement},
 };
@@ -42,7 +43,7 @@ pub enum PathCreateMethod {
 
 impl PathCreateMethod {
     #[inline]
-    pub fn implementation(self) -> fn(&Responder, u8, Points) -> Path {
+    pub fn implementation(self) -> fn(PathCreateContext) -> Path {
         match self {
             Self::Transmute => path::create::transmute,
             Self::Random => path::create::random,
@@ -64,7 +65,7 @@ pub enum PathImproveMethod {
 
 impl PathImproveMethod {
     #[inline]
-    pub fn implementation(self) -> fn(&Responder, u8, Path) -> Path {
+    pub fn implementation(self) -> fn(PathImproveContext) -> Path {
         match self {
             Self::Rotate => path::improve::rotate,
             Self::TwoOpt => path::improve::two_opt,

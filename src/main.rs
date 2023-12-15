@@ -10,6 +10,7 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
+use action::{ActionContext, PathCreateContext, PathImproveContext};
 use graph::Points;
 use simple_websockets::Responder;
 use typed::{Action, Output};
@@ -20,6 +21,7 @@ use crate::{
     typed::Input,
 };
 
+mod action;
 mod autorestart;
 mod error;
 mod graph;
@@ -89,7 +91,15 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
         } => {
             let method = method.implementation();
             let points = Points::try_new_raw(values, dim).expect("should send valid data");
-            let path = method(client, dim, points);
+            let ctx = PathCreateContext {
+                action: ActionContext {
+                    client: client.clone(),
+                    latency,
+                },
+                dim,
+                points,
+            };
+            let path = method(ctx);
 
             typed::send(client, PathCreation::done(path));
         }
@@ -100,7 +110,15 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
         } => {
             let method = method.implementation();
             let old_path = Path::try_new_raw(path, dim).expect("should send valid data");
-            let improved_path = method(client, dim, old_path.clone());
+            let ctx = PathImproveContext {
+                action: ActionContext {
+                    client: client.clone(),
+                    latency,
+                },
+                dim,
+                path: old_path,
+            };
+            let improved_path = method(ctx);
 
             typed::send(client, PathImprovement::from_path(improved_path).done());
         }
