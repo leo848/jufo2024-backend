@@ -64,9 +64,6 @@ fn main() {
 }
 
 fn handle_action(action: Action, latency: u64, client: &Responder) {
-    if latency != 0 {
-        todo!();
-    }
     match action {
         Action::SortNumbers {
             mut numbers,

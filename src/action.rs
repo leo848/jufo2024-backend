@@ -1,10 +1,20 @@
+use crate::Output;
+use std::{thread, time::Duration};
+
 use simple_websockets::Responder;
 
-use crate::{Path, Points};
+use crate::{Path, Points, typed::send};
 
 pub struct ActionContext {
     pub client: Responder,
     pub latency: u64,
+}
+
+impl ActionContext {
+    pub fn send(&self, message: impl Into<Output>) {
+        send(&self.client, message);
+        thread::sleep(Duration::from_millis(self.latency));
+    }
 }
 
 pub struct IntegerContext {

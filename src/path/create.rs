@@ -8,7 +8,6 @@ use crate::{
     action::PathCreateContext,
     graph::{Cost, Edge, Edges, Path, Points},
     path::creation::PathCreation,
-    typed::send,
     util::factorial,
 };
 
@@ -25,9 +24,7 @@ pub fn transmute(ctx: PathCreateContext) -> Path {
 }
 
 pub fn nearest_neighbor(ctx: PathCreateContext) -> Path {
-    let values = ctx.points;
-    let dim = ctx.dim;
-    let client = &ctx.action.client;
+    let PathCreateContext { action, dim, points: values } = ctx;
 
     let mut visited = HashSet::new();
     let mut path = Path::try_new(vec![values[0].clone()], dim).expect("Provided valid value");
@@ -42,8 +39,7 @@ pub fn nearest_neighbor(ctx: PathCreateContext) -> Path {
             .expect("point was empty even though path is not full");
 
         path.push(min.clone());
-        send(
-            client,
+        action.send(
             PathCreation::from_path(path.clone()).progress(path.len() as f32 / values.len() as f32),
         );
     }
@@ -52,8 +48,7 @@ pub fn nearest_neighbor(ctx: PathCreateContext) -> Path {
 }
 
 pub fn brute_force(ctx: PathCreateContext) -> Path {
-    let values = ctx.points;
-    let client = &ctx.action.client;
+    let PathCreateContext { action, points: values, .. } = ctx;
 
     let mut min = Cost::new(f32::INFINITY);
 
@@ -70,8 +65,7 @@ pub fn brute_force(ctx: PathCreateContext) -> Path {
             min_permutation = permutation;
         }
         if ((i & (send_every - 1)) == 0) || cost < min {
-            send(
-                client,
+            action.send(
                 PathCreation::from_path(min_permutation.clone().into_path())
                     .progress(i as f32 / permutation_count as f32),
             );
@@ -82,8 +76,7 @@ pub fn brute_force(ctx: PathCreateContext) -> Path {
 }
 
 pub fn greedy(ctx: PathCreateContext) -> Path {
-    let values = ctx.points;
-    let client = &ctx.action.client;
+    let PathCreateContext { action, points: values, .. } = ctx;
 
     let mut sorted_edge_iterator = values.edges_iter().sorted_by_key(Edge::dist_squared);
 
@@ -110,8 +103,7 @@ pub fn greedy(ctx: PathCreateContext) -> Path {
             element = next;
         }
 
-        send(
-            client,
+        action.send(
             PathCreation::from_edges(Edges::from_bimap(bimap.clone()))
                 .progress(bimap.len() as f32 / values.len() as f32),
         );
@@ -133,8 +125,7 @@ pub fn greedy(ctx: PathCreateContext) -> Path {
 }
 
 pub fn christofides(ctx: PathCreateContext) -> Path {
-    let values = ctx.points;
-    let client = &ctx.action.client;
+    let PathCreateContext { action, points: values, .. } = ctx;
 
     // 1. Finde den MST (minimalen Baum, der alle Knoten verbindet)
     let mut visited = HashSet::new();
@@ -156,7 +147,7 @@ pub fn christofides(ctx: PathCreateContext) -> Path {
         visited.insert(min_edge.to().clone());
         edges.push(min_edge);
 
-        send(client, PathCreation::from_edges(edges.clone()))
+        action.send(PathCreation::from_edges(edges.clone()))
     }
 
     let mst = edges;
