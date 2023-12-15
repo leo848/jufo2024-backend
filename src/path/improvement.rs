@@ -6,6 +6,7 @@ use crate::{graph::Path, Output};
 #[serde(rename_all = "camelCase")]
 pub struct PathImprovement {
     done: bool,
+    better: bool,
     current_path: Path,
     #[serde(skip_serializing_if = "Option::is_none")]
     progress: Option<f32>,
@@ -15,9 +16,14 @@ impl PathImprovement {
     pub fn from_path(path: Path) -> Self {
         Self {
             current_path: path,
+            better: true,
             done: false,
             progress: None,
         }
+    }
+
+    pub fn better(self, better: bool) -> PathImprovement {
+        Self { better, ..self }
     }
 
     pub fn done(self) -> Self {

@@ -102,7 +102,7 @@ pub fn three_opt(client: &Responder, _dim: u8, old_path: Path) -> Path {
                                 PathImprovement::from_path(path.clone()).progress(
                                     (i * path.len() + j) as f32
                                         / ((path.len()) * path.len()) as f32,
-                                ),
+                                ).better(new_cost < best_cost),
                             );
                         }
                         if new_cost < best_cost {
