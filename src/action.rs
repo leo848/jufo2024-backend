@@ -1,9 +1,8 @@
-use crate::Output;
 use std::{thread, time::Duration};
 
 use simple_websockets::Responder;
 
-use crate::{Path, Points, typed::send};
+use crate::{typed::send, Output, Path, Points};
 
 pub struct ActionContext {
     pub client: Responder,

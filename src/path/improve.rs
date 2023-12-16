@@ -6,8 +6,18 @@ use crate::{
 };
 
 pub fn rotate(ctx: PathImproveContext) -> Path {
-    let old_path = ctx.path;
-    let dim = ctx.dim;
+    let PathImproveContext {
+        action,
+        path: old_path,
+        dim,
+    } = ctx;
+
+    for i in 0..old_path.len() {
+        let mut inner = old_path.clone().into_inner();
+        inner.rotate_left(i);
+        let rotated = Path::try_new(inner, dim).unwrap();
+        action.send(PathImprovement::from_path(rotated).better(false));
+    }
 
     let edges = old_path.clone().into_edges();
     let (max_idx, max_edge) = edges
@@ -29,15 +39,16 @@ pub fn rotate(ctx: PathImproveContext) -> Path {
 }
 
 pub fn two_opt(ctx: PathImproveContext) -> Path {
-    let old_path = ctx.path;
-    let client = &ctx.action.client;
-
     fn two_opt_swap(path: &mut Path, v1: usize, v2: usize) {
         let path = path.as_mut();
         path[v1 + 1..v2].reverse();
     }
 
-    let mut path = old_path.clone();
+    let PathImproveContext {
+        action,
+        mut path,
+        dim: _,
+    } = ctx;
 
     let mut improvement = true;
     let mut best_cost = path.cost();
@@ -49,12 +60,9 @@ pub fn two_opt(ctx: PathImproveContext) -> Path {
                 two_opt_swap(&mut path, i, j);
                 let new_cost = path.cost();
                 if new_cost < best_cost {
-                    send(
-                        client,
-                        PathImprovement::from_path(path.clone()).progress(
-                            (i * path.len() + j) as f32 / ((path.len()) * path.len()) as f32,
-                        ),
-                    );
+                    action.send(PathImprovement::from_path(path.clone()).progress(
+                        (i * path.len() + j) as f32 / ((path.len()) * path.len()) as f32,
+                    ));
                 }
                 if new_cost < best_cost {
                     improvement = true;
@@ -87,8 +95,7 @@ pub fn three_opt(ctx: PathImproveContext) -> Path {
         }
     }
 
-    let client = &ctx.action.client;
-    let mut path = ctx.path;
+    let PathImproveContext { action, dim: _, mut path } = ctx;
 
     let mut improvement = true;
     let mut best_cost = path.cost();
@@ -103,8 +110,7 @@ pub fn three_opt(ctx: PathImproveContext) -> Path {
                         path = three_opt_swap(path, method, i, j, k);
                         let new_cost = path.cost();
                         if new_cost < best_cost || (k == j + 2 && j == i + 2) {
-                            send(
-                                client,
+                            action.send(
                                 PathImprovement::from_path(path.clone())
                                     .progress(
                                         (i * path.len() + j) as f32

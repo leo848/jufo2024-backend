@@ -24,7 +24,11 @@ pub fn transmute(ctx: PathCreateContext) -> Path {
 }
 
 pub fn nearest_neighbor(ctx: PathCreateContext) -> Path {
-    let PathCreateContext { action, dim, points: values } = ctx;
+    let PathCreateContext {
+        action,
+        dim,
+        points: values,
+    } = ctx;
 
     let mut visited = HashSet::new();
     let mut path = Path::try_new(vec![values[0].clone()], dim).expect("Provided valid value");
@@ -48,7 +52,11 @@ pub fn nearest_neighbor(ctx: PathCreateContext) -> Path {
 }
 
 pub fn brute_force(ctx: PathCreateContext) -> Path {
-    let PathCreateContext { action, points: values, .. } = ctx;
+    let PathCreateContext {
+        action,
+        points: values,
+        ..
+    } = ctx;
 
     let mut min = Cost::new(f32::INFINITY);
 
@@ -76,7 +84,11 @@ pub fn brute_force(ctx: PathCreateContext) -> Path {
 }
 
 pub fn greedy(ctx: PathCreateContext) -> Path {
-    let PathCreateContext { action, points: values, .. } = ctx;
+    let PathCreateContext {
+        action,
+        points: values,
+        ..
+    } = ctx;
 
     let mut sorted_edge_iterator = values.edges_iter().sorted_by_key(Edge::dist_squared);
 
@@ -125,7 +137,11 @@ pub fn greedy(ctx: PathCreateContext) -> Path {
 }
 
 pub fn christofides(ctx: PathCreateContext) -> Path {
-    let PathCreateContext { action, points: values, .. } = ctx;
+    let PathCreateContext {
+        action,
+        points: values,
+        ..
+    } = ctx;
 
     // 1. Finde den MST (minimalen Baum, der alle Knoten verbindet)
     let mut visited = HashSet::new();
