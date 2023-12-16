@@ -15,12 +15,27 @@ Auf dem Port 3141 wird ein Webserver gestartet, der einkommende Requests über d
 ## Funktionen
 
 - Zahlen sortieren
-    - Algorithmen: Bubble Sort, Selection Sort, Insertion Sort
+    - Algorithmen
+        - Bubble Sort
+        - Selection Sort
+        - Insertion Sort
     - Bei jedem Zwischenschritt wird das Ergebnis mitgeteilt
     - Zusätzliche Ausgabe der Aktionen des Algorithmus
 - Pfad erstellen
-    - Algorithmen: Zufällig, Reihenfolge, Brute Force, Nächster Nachbar, Greedy, geplant: Christofides, Concorde
-    - Aus beliebiger Liste von Vektoren so einen Pfad erstellen
+    - Aus beliebiger Liste von Vektoren einen Hamilton-Pfad erstellen
+    - Algorithmen:
+        - Zufällig
+        - Reihenfolge
+        - Brute Force
+        - Nächster Nachbar
+        - Greedy
+        - Christofides (geplant)
+        - Concorde (geplant)
 - Pfad verbessern
     - Einen bestehenden Pfad verbessern
-    - Algorithmen: Rotieren, 2-opt, 3-opt, geplant: Simulated Annealing, Ameisenkolonie
+    - Algorithmen:
+        - Rotieren
+        - 2-opt
+        - 3-opt
+        - Simulated Annealing (geplant)
+        - Ameisenkolonie (geplant)
