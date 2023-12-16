@@ -1,6 +1,6 @@
 # jufo2024-backend
 
-Dieses Repository enthält den Code für den Backend-Webserver des Jugend forscht-Projekts "sorting the colors: Dimensionsbezogene Generalisierung vergleichsbasierter Sortierung". Der Server ist in [Rust](https://www.rust-lang.org)
+Dieses Repository enthält den Code für den Backend-Webserver des Jugend forscht-Projekts "sorting the colors: Dimensionsbezogene Generalisierung vergleichsbasierter Sortierung". Der Server ist in [Rust](https://www.rust-lang.org) geschrieben.
 
 ## Installation
 
