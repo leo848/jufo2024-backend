@@ -4,11 +4,12 @@ use serde::{Deserialize, Serialize};
 use simple_websockets::{Event, EventHub, Message, Responder};
 
 use crate::{
-    action::{PathCreateContext, PathImproveContext},
+    action::{IntegerSortContext, PathCreateContext, PathImproveContext},
     autorestart,
     error::Error,
     graph::Path,
     integer_sort,
+    integer_sort::SortedNumbers,
     path::{self, creation::PathCreation, improvement::PathImprovement},
 };
 
@@ -23,7 +24,7 @@ pub enum IntegerSortAlgorithm {
 }
 
 impl IntegerSortAlgorithm {
-    pub fn implementation(self) -> fn(&Responder, &mut [u64]) {
+    pub fn implementation(self) -> fn(IntegerSortContext) -> Vec<u64> {
         match self {
             Self::Bubble => integer_sort::bubble,
             Self::Insertion => integer_sort::insertion,
@@ -128,11 +129,7 @@ pub enum Output {
     Error {
         error: Error,
     },
-    SortedNumbers {
-        done: bool,
-        numbers: Vec<u64>,
-        highlight: Vec<(usize, Highlight)>,
-    },
+    SortedNumbers(SortedNumbers),
     PathCreation(PathCreation),
     PathImprovement(PathImprovement),
     #[serde(rename_all = "camelCase")]

@@ -2,7 +2,6 @@ use crate::{
     action::PathImproveContext,
     graph::{Edge, Path},
     path::improvement::PathImprovement,
-    typed::send,
 };
 
 pub fn rotate(ctx: PathImproveContext) -> Path {
@@ -95,7 +94,11 @@ pub fn three_opt(ctx: PathImproveContext) -> Path {
         }
     }
 
-    let PathImproveContext { action, dim: _, mut path } = ctx;
+    let PathImproveContext {
+        action,
+        dim: _,
+        mut path,
+    } = ctx;
 
     let mut improvement = true;
     let mut best_cost = path.cost();

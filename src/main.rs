@@ -4,13 +4,13 @@
 #![allow(clippy::cast_precision_loss)]
 #![allow(clippy::module_name_repetitions)]
 
+use crate::integer_sort::SortedNumbers;
 use std::{
     collections::HashMap,
-    thread,
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    time::{SystemTime, UNIX_EPOCH},
 };
 
-use action::{ActionContext, PathCreateContext, PathImproveContext};
+use action::{ActionContext, PathCreateContext, PathImproveContext, IntegerSortContext};
 use graph::Points;
 use simple_websockets::Responder;
 use typed::{Action, Output};
@@ -31,10 +31,6 @@ mod typed;
 mod util;
 
 const PORT: u16 = 3141;
-
-fn sleep_ms(ms: u64) {
-    thread::sleep(Duration::from_millis(ms));
-}
 
 fn main() {
     let event_hub = simple_websockets::launch(PORT)
@@ -66,19 +62,16 @@ fn main() {
 fn handle_action(action: Action, latency: u64, client: &Responder) {
     match action {
         Action::SortNumbers {
-            mut numbers,
+            numbers,
             algorithm,
         } => {
             let method = algorithm.implementation();
-            method(client, &mut numbers);
+            let ctx = IntegerSortContext { action: ActionContext { client: client.clone(), latency }, numbers };
+            let numbers = method(ctx);
 
             typed::send(
                 client,
-                Output::SortedNumbers {
-                    done: true,
-                    numbers,
-                    highlight: vec![],
-                },
+                SortedNumbers::new(&numbers).done()
             );
         }
         Action::CreatePath {

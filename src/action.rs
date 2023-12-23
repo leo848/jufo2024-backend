@@ -16,7 +16,7 @@ impl ActionContext {
     }
 }
 
-pub struct IntegerContext {
+pub struct IntegerSortContext {
     pub action: ActionContext,
     pub numbers: Vec<u64>,
 }
