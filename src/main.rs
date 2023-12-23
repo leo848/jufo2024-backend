@@ -4,19 +4,19 @@
 #![allow(clippy::cast_precision_loss)]
 #![allow(clippy::module_name_repetitions)]
 
-use crate::integer_sort::SortedNumbers;
 use std::{
     collections::HashMap,
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use action::{ActionContext, PathCreateContext, PathImproveContext, IntegerSortContext};
+use action::{ActionContext, IntegerSortContext, PathCreateContext, PathImproveContext};
 use graph::Points;
 use simple_websockets::Responder;
 use typed::{Action, Output};
 
 use crate::{
     graph::Path,
+    integer_sort::SortedNumbers,
     path::{creation::PathCreation, improvement::PathImprovement},
     typed::Input,
 };
@@ -61,18 +61,18 @@ fn main() {
 
 fn handle_action(action: Action, latency: u64, client: &Responder) {
     match action {
-        Action::SortNumbers {
-            numbers,
-            algorithm,
-        } => {
+        Action::SortNumbers { numbers, algorithm } => {
             let method = algorithm.implementation();
-            let ctx = IntegerSortContext { action: ActionContext { client: client.clone(), latency }, numbers };
+            let ctx = IntegerSortContext {
+                action: ActionContext {
+                    client: client.clone(),
+                    latency,
+                },
+                numbers,
+            };
             let numbers = method(ctx);
 
-            typed::send(
-                client,
-                SortedNumbers::new(&numbers).done()
-            );
+            typed::send(client, SortedNumbers::new(&numbers).done());
         }
         Action::CreatePath {
             dimensions: dim,
