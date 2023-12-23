@@ -18,6 +18,8 @@ pub enum IntegerSortAlgorithm {
     Bubble,
     Selection,
     Insertion,
+    Merge,
+    Quick,
 }
 
 impl IntegerSortAlgorithm {
@@ -26,6 +28,8 @@ impl IntegerSortAlgorithm {
             Self::Bubble => integer_sort::bubble,
             Self::Insertion => integer_sort::insertion,
             Self::Selection => integer_sort::selection,
+            Self::Merge => integer_sort::merge,
+            Self::Quick => integer_sort::quick,
         }
     }
 }

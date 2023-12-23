@@ -96,3 +96,11 @@ pub fn insertion(client: &Responder, numbers: &mut [u64]) {
         sleep_ms(750);
     }
 }
+
+pub fn merge(client: &Responder, numbers: &mut [u64]) {
+    todo!()
+}
+
+pub fn quick(client: &Responder, numbers: &mut [u64]) {
+    todo!()
+}
