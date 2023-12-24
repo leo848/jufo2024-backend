@@ -118,6 +118,9 @@ pub enum Highlight {
     Compare,
     Swap,
     Correct,
+    Consider,
+    Smaller,
+    Larger,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -129,7 +132,11 @@ pub enum Output {
     Error {
         error: Error,
     },
-    SortedNumbers(SortedNumbers),
+    SortedNumbers {
+        done: bool,
+        numbers: Vec<u64>,
+        highlight: Vec<(usize, Highlight)>,
+    },
     PathCreation(PathCreation),
     PathImprovement(PathImprovement),
     #[serde(rename_all = "camelCase")]

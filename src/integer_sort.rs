@@ -1,9 +1,8 @@
+use std::collections::HashMap;
+
 use serde::Serialize;
 
-use crate::{
-    typed::Highlight,
-    Output,
-};
+use crate::{typed::Highlight, Output};
 
 mod bubble;
 mod insertion;
@@ -21,7 +20,7 @@ pub use selection::selection;
 pub struct SortedNumbers {
     done: bool,
     numbers: Vec<u64>,
-    highlight: Vec<(usize, Highlight)>,
+    highlight: HashMap<usize, Highlight>,
 }
 
 impl SortedNumbers {
@@ -38,7 +37,7 @@ impl SortedNumbers {
     }
 
     pub fn highlight(mut self, index: usize, highlight: Highlight) -> Self {
-        self.highlight.push((index, highlight));
+        self.highlight.insert(index, highlight);
         self
     }
 
@@ -52,6 +51,15 @@ impl SortedNumbers {
 
 impl From<SortedNumbers> for Output {
     fn from(value: SortedNumbers) -> Self {
-        Output::SortedNumbers(value)
+        let SortedNumbers {
+            done,
+            numbers,
+            highlight,
+        } = value;
+        Output::SortedNumbers {
+            done,
+            numbers,
+            highlight: highlight.into_iter().collect(),
+        }
     }
 }

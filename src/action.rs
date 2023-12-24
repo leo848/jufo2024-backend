@@ -4,6 +4,7 @@ use simple_websockets::Responder;
 
 use crate::{typed::send, Output, Path, Points};
 
+#[derive(Clone)]
 pub struct ActionContext {
     pub client: Responder,
     pub latency: u64,
@@ -16,17 +17,20 @@ impl ActionContext {
     }
 }
 
+#[derive(Clone)]
 pub struct IntegerSortContext {
     pub action: ActionContext,
     pub numbers: Vec<u64>,
 }
 
+#[derive(Clone)]
 pub struct PathCreateContext {
     pub action: ActionContext,
     pub dim: u8,
     pub points: Points,
 }
 
+#[derive(Clone)]
 pub struct PathImproveContext {
     pub action: ActionContext,
     pub dim: u8,
