@@ -1,8 +1,8 @@
-use std::{ops::Range, cmp::Ordering};
+use std::{cmp::Ordering, ops::Range};
 
 use crate::{
     action::ActionContext,
-    typed::Highlight::{Pivot, Consider, Correct, Larger, Smaller},
+    typed::Highlight::{Consider, Correct, Larger, Pivot, Smaller},
     IntegerSortContext, SortedNumbers,
 };
 
@@ -31,10 +31,11 @@ pub fn quick_rec(numbers: &mut [u64], bounds: Range<usize>, action: ActionContex
         action.send(
             SortedNumbers::new(&numbers)
                 .highlights(bounds.clone().map(|i| (i, Consider)))
-                .highlights((bounds.start + 1 .. index + 1 + bounds.start).map(|i| {
-                    (i, if numbers[i] < pivot { Smaller } else { Larger })
-                }))
-                .highlight(bounds.start, Pivot)
+                .highlights(
+                    (bounds.start + 1..index + 1 + bounds.start)
+                        .map(|i| (i, if numbers[i] < pivot { Smaller } else { Larger })),
+                )
+                .highlight(bounds.start, Pivot),
         );
         if number < pivot {
             lt.push(number);
@@ -52,15 +53,16 @@ pub fn quick_rec(numbers: &mut [u64], bounds: Range<usize>, action: ActionContex
 
     action.send(
         SortedNumbers::new(&numbers)
-            .highlights(
-                bounds
-                    .clone()
-                    .map(|i| (i, match i.cmp(&lt.len()) {
+            .highlights(bounds.clone().map(|i| {
+                (
+                    i,
+                    match i.cmp(&lt.len()) {
                         Ordering::Less => Smaller,
                         Ordering::Equal => Pivot,
                         Ordering::Greater => Larger,
-                    })),
-            )
+                    },
+                )
+            }))
             .highlights([(lt.len() + bounds.start, Pivot)]),
     );
 
@@ -75,12 +77,5 @@ pub fn quick_rec(numbers: &mut [u64], bounds: Range<usize>, action: ActionContex
         action.clone(),
     );
 
-    action.send(
-        SortedNumbers::new(&numbers)
-            .highlights(
-                bounds
-                    .clone()
-                    .map(|i| (i, Correct))
-            )
-    );
+    action.send(SortedNumbers::new(&numbers).highlights(bounds.clone().map(|i| (i, Correct))));
 }
