@@ -1,8 +1,8 @@
-use std::ops::Range;
+use std::{ops::Range, cmp::Ordering};
 
 use crate::{
     action::ActionContext,
-    typed::Highlight::{Compare, Consider, Correct, Larger, Smaller},
+    typed::Highlight::{Pivot, Consider, Correct, Larger, Smaller},
     IntegerSortContext, SortedNumbers,
 };
 
@@ -28,19 +28,17 @@ pub fn quick_rec(numbers: &mut [u64], bounds: Range<usize>, action: ActionContex
     let mut ge = Vec::with_capacity(bounds.len());
 
     for (index, &number) in numbers[bounds.clone()].iter().enumerate() {
+        action.send(
+            SortedNumbers::new(&numbers)
+                .highlights(bounds.clone().map(|i| (i, Consider)))
+                .highlights((bounds.start + 1 .. index + 1 + bounds.start).map(|i| {
+                    (i, if numbers[i] < pivot { Smaller } else { Larger })
+                }))
+                .highlight(bounds.start, Pivot)
+        );
         if number < pivot {
-            action.send(
-                SortedNumbers::new(&numbers)
-                    .highlights(bounds.clone().map(|i| (i, Consider)))
-                    .highlights([(index + bounds.start, Smaller), (bounds.start, Compare)]),
-            );
             lt.push(number);
         } else {
-            action.send(
-                SortedNumbers::new(&numbers)
-                    .highlights(bounds.clone().map(|i| (i, Consider)))
-                    .highlights([(index + bounds.start, Larger), (bounds.start, Compare)]),
-            );
             ge.push(number);
         }
     }
@@ -57,9 +55,13 @@ pub fn quick_rec(numbers: &mut [u64], bounds: Range<usize>, action: ActionContex
             .highlights(
                 bounds
                     .clone()
-                    .map(|i| (i, if i < lt.len() { Smaller } else { Larger })),
+                    .map(|i| (i, match i.cmp(&lt.len()) {
+                        Ordering::Less => Smaller,
+                        Ordering::Equal => Pivot,
+                        Ordering::Greater => Larger,
+                    })),
             )
-            .highlights([(lt.len() + bounds.start, Correct)]),
+            .highlights([(lt.len() + bounds.start, Pivot)]),
     );
 
     quick_rec(
@@ -72,15 +74,13 @@ pub fn quick_rec(numbers: &mut [u64], bounds: Range<usize>, action: ActionContex
         bounds.start + lt.len() + 1..bounds.end,
         action.clone(),
     );
-    // for actual_index in 0..lt.len() {
-    //     let (orig_index, number) = lt[actual_index];
-    //     numbers.swap(actual_index, orig_index);
-    //     lt.swap(actual_index, orig_index);
-    // }
 
-    // for actual_index in 0..ge.len() {
-    //     let (orig_index, number) = ge[actual_index];
-    //     numbers.swap(actual_index + lt.len(), orig_index);
-    //     ge.swap(actual_index, orig_index - lt.len());
-    // }
+    action.send(
+        SortedNumbers::new(&numbers)
+            .highlights(
+                bounds
+                    .clone()
+                    .map(|i| (i, Correct))
+            )
+    );
 }

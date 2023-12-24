@@ -121,6 +121,7 @@ pub enum Highlight {
     Consider,
     Smaller,
     Larger,
+    Pivot,
 }
 
 #[derive(Serialize, Debug, Clone)]
