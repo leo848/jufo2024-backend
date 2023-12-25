@@ -1,10 +1,12 @@
 use core::ops::Range;
-use crate::typed::Highlight::Consider;
 use std::collections::HashMap;
 
 use serde::Serialize;
 
-use crate::{typed::Highlight, Output};
+use crate::{
+    typed::{Highlight, Highlight::Consider},
+    Output,
+};
 
 mod bubble;
 mod insertion;

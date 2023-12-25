@@ -56,7 +56,7 @@ pub fn quick_rec(numbers: &mut [u64], bounds: Range<usize>, action: ActionContex
             .highlights(bounds.clone().map(|i| {
                 (
                     i,
-                    match (i-bounds.start).cmp(&lt.len()) {
+                    match (i - bounds.start).cmp(&lt.len()) {
                         Ordering::Less => Smaller,
                         Ordering::Equal => Pivot,
                         Ordering::Greater => Larger,

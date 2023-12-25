@@ -1,8 +1,6 @@
-use crate::typed::Highlight::Correct;
 use std::ops::Range;
-use crate::{
-    IntegerSortContext, SortedNumbers, action::ActionContext,
-};
+
+use crate::{action::ActionContext, typed::Highlight::Correct, IntegerSortContext, SortedNumbers};
 pub fn merge(ctx: IntegerSortContext) -> Vec<u64> {
     let IntegerSortContext { action, numbers } = ctx;
 
@@ -18,19 +16,33 @@ fn merge_rec(numbers: &[u64], range: Range<usize>, action: ActionContext) -> Vec
 
     action.send(SortedNumbers::new(&numbers).consider(&range));
 
-    let to_merge_1 = merge_rec(&numbers, range.start .. range.start + range.len() / 2, action.clone());
+    let to_merge_1 = merge_rec(
+        &numbers,
+        range.start..range.start + range.len() / 2,
+        action.clone(),
+    );
     for (index, &number) in to_merge_1.iter().enumerate() {
         numbers[index + range.start] = number;
     }
 
-    action.send(SortedNumbers::new(&numbers).highlights((range.start .. range.start + range.len() / 2).map(|i| (i, Correct))));
+    action.send(
+        SortedNumbers::new(&numbers)
+            .highlights((range.start..range.start + range.len() / 2).map(|i| (i, Correct))),
+    );
 
-    let to_merge_2 = merge_rec(&numbers, range.start + range.len() / 2 .. range.end, action.clone());
+    let to_merge_2 = merge_rec(
+        &numbers,
+        range.start + range.len() / 2..range.end,
+        action.clone(),
+    );
     for (index, &number) in to_merge_2.iter().enumerate() {
         numbers[index + range.start + range.len() / 2] = number;
     }
 
-    action.send(SortedNumbers::new(&numbers).highlights((range.start + range.len() / 2 .. range.end).map(|i| (i, Correct))));
+    action.send(
+        SortedNumbers::new(&numbers)
+            .highlights((range.start + range.len() / 2..range.end).map(|i| (i, Correct))),
+    );
 
     merge_vectors(to_merge_1, to_merge_2)
 }
@@ -45,10 +57,12 @@ fn merge_vectors(a: Vec<u64>, b: Vec<u64>) -> Vec<u64> {
             (Some(&value), None) => {
                 a_iter.next();
                 value
-            }, (None, Some(&value)) => {
+            }
+            (None, Some(&value)) => {
                 b_iter.next();
                 value
-            }, (Some(&value_a), Some(&value_b)) => {
+            }
+            (Some(&value_a), Some(&value_b)) => {
                 if value_a < value_b {
                     a_iter.next();
                     value_a
