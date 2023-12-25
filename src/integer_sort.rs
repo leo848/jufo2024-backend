@@ -1,3 +1,5 @@
+use core::ops::Range;
+use crate::typed::Highlight::Consider;
 use std::collections::HashMap;
 
 use serde::Serialize;
@@ -46,6 +48,10 @@ impl SortedNumbers {
             self = self.highlight(index, highlight);
         }
         self
+    }
+
+    pub fn consider(self, range: &Range<usize>) -> Self {
+        self.highlights(range.clone().map(|i| (i, Consider)))
     }
 }
 
