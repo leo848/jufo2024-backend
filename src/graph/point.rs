@@ -4,7 +4,10 @@ use std::{ops::Not, slice::SliceIndex};
 use itertools::Itertools;
 use serde::Serialize;
 
-use crate::graph::{Cost, Edge, Path, Scalar};
+use crate::{
+    graph::{Cost, Edge, Path, Scalar},
+    typed::Norm,
+};
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Point(Vec<Scalar>);
 
@@ -27,7 +30,7 @@ impl Point {
         self.0.len()
     }
 
-    pub fn dist_squared(&self, other: &Point) -> Cost {
+    fn euclidean_dist_squared(&self, other: &Point) -> Cost {
         self.0
             .iter()
             .zip(&other.0)
@@ -35,8 +38,45 @@ impl Point {
             .sum()
     }
 
-    pub fn dist(&self, other: &Point) -> Cost {
-        self.dist_squared(other).sqrt()
+    fn euclidean_dist(&self, other: &Point) -> Cost {
+        self.euclidean_dist_squared(other).sqrt()
+    }
+
+    fn manhattan_dist(&self, other: &Point) -> Cost {
+        self.0
+            .iter()
+            .zip(&other.0)
+            .map(|(comp1, comp2)| (comp1 - comp2).abs())
+            .sum()
+    }
+
+    fn max_dist(&self, other: &Point) -> Cost {
+        Cost::new(
+            self.0
+                .iter()
+                .zip(&other.0)
+                .map(|(comp1, comp2)| (comp1 - comp2).abs())
+                .max_by(Scalar::total_cmp)
+                .unwrap_or(0.0),
+        )
+    }
+
+    #[inline]
+    pub fn comparable_dist(&self, other: &Point, norm: Norm) -> Cost {
+        match norm {
+            Norm::Manhattan => self.manhattan_dist(other),
+            Norm::Euclidean => self.euclidean_dist_squared(other),
+            Norm::Max => self.max_dist(other),
+        }
+    }
+
+    #[inline]
+    pub fn dist(&self, other: &Point, norm: Norm) -> Cost {
+        match norm {
+            Norm::Manhattan => self.manhattan_dist(other),
+            Norm::Euclidean => self.euclidean_dist(other),
+            Norm::Max => self.max_dist(other),
+        }
     }
 }
 

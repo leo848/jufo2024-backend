@@ -9,6 +9,7 @@ pub fn rotate(ctx: PathImproveContext) -> Path {
         action,
         path: old_path,
         dim,
+        norm,
     } = ctx;
 
     for i in 0..old_path.len() {
@@ -22,9 +23,10 @@ pub fn rotate(ctx: PathImproveContext) -> Path {
     let (max_idx, max_edge) = edges
         .into_iter()
         .enumerate()
-        .max_by_key(|(_, edge)| edge.dist())
+        .max_by_key(|(_, edge)| edge.dist(norm))
         .expect("should be nonempty");
-    if max_edge.dist() > Edge::new(old_path[0].clone(), old_path[old_path.len() - 1].clone()).dist()
+    if max_edge.dist(norm)
+        > Edge::new(old_path[0].clone(), old_path[old_path.len() - 1].clone()).dist(norm)
     {
         let mut new_path = old_path.into_inner();
         let len = new_path.len();
@@ -47,17 +49,18 @@ pub fn two_opt(ctx: PathImproveContext) -> Path {
         action,
         mut path,
         dim: _,
+        norm,
     } = ctx;
 
     let mut improvement = true;
-    let mut best_cost = path.cost();
+    let mut best_cost = path.cost(norm);
 
     'improvin: while improvement {
         improvement = false;
         for i in 0..path.len() - 1 {
             for j in i + 1..path.len() {
                 two_opt_swap(&mut path, i, j);
-                let new_cost = path.cost();
+                let new_cost = path.cost(norm);
                 if new_cost < best_cost {
                     action.send(PathImprovement::from_path(path.clone()).progress(
                         (i * path.len() + j) as f32 / ((path.len()) * path.len()) as f32,
@@ -98,10 +101,11 @@ pub fn three_opt(ctx: PathImproveContext) -> Path {
         action,
         dim: _,
         mut path,
+        norm,
     } = ctx;
 
     let mut improvement = true;
-    let mut best_cost = path.cost();
+    let mut best_cost = path.cost(norm);
 
     'improvin: while improvement {
         improvement = false;
@@ -111,7 +115,7 @@ pub fn three_opt(ctx: PathImproveContext) -> Path {
                 for k in j + 2..path.len() {
                     for method in 0..=3 {
                         path = three_opt_swap(path, method, i, j, k);
-                        let new_cost = path.cost();
+                        let new_cost = path.cost(norm);
                         if new_cost < best_cost || (k == j + 2 && j == i + 2) {
                             action.send(
                                 PathImprovement::from_path(path.clone())

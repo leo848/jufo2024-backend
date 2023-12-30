@@ -78,6 +78,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
             dimensions: dim,
             values,
             method,
+            norm,
         } => {
             let method = method.implementation();
             let points = Points::try_new_raw(values, dim).expect("should send valid data");
@@ -88,6 +89,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
                 },
                 dim,
                 points,
+                norm,
             };
             let path = method(ctx);
 
@@ -97,6 +99,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
             dimensions: dim,
             path,
             method,
+            norm,
         } => {
             let method = method.implementation();
             let old_path = Path::try_new_raw(path, dim).expect("should send valid data");
@@ -107,6 +110,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
                 },
                 dim,
                 path: old_path,
+                norm,
             };
             let improved_path = method(ctx);
 

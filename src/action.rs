@@ -2,7 +2,10 @@ use std::{thread, time::Duration};
 
 use simple_websockets::Responder;
 
-use crate::{typed::send, Output, Path, Points};
+use crate::{
+    typed::{send, Norm},
+    Output, Path, Points,
+};
 
 #[derive(Clone)]
 pub struct ActionContext {
@@ -28,6 +31,7 @@ pub struct PathCreateContext {
     pub action: ActionContext,
     pub dim: u8,
     pub points: Points,
+    pub norm: Norm,
 }
 
 #[derive(Clone)]
@@ -35,4 +39,5 @@ pub struct PathImproveContext {
     pub action: ActionContext,
     pub dim: u8,
     pub path: Path,
+    pub norm: Norm,
 }

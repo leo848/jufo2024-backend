@@ -4,7 +4,10 @@ use std::ops::Add;
 use itertools::Itertools;
 use serde::Serialize;
 
-use crate::graph::{Cost, Edge, Edges, Point, Scalar};
+use crate::{
+    graph::{Cost, Edge, Edges, Point, Scalar},
+    typed::Norm,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Path(Vec<Point>);
@@ -26,8 +29,8 @@ impl Path {
         self.0
     }
 
-    pub fn cost(&self) -> Cost {
-        self.0.windows(2).map(|s| s[0].dist(&s[1])).sum()
+    pub fn cost(&self, norm: Norm) -> Cost {
+        self.0.windows(2).map(|s| s[0].dist(&s[1], norm)).sum()
     }
 
     pub fn into_edges(self) -> Edges {

@@ -6,7 +6,7 @@ use itertools::Itertools;
 
 use crate::{
     action::PathCreateContext,
-    graph::{Cost, Edge, Edges, Path, Points},
+    graph::{Cost, Edges, Path, Points},
     path::creation::PathCreation,
     util::factorial,
 };
@@ -28,6 +28,7 @@ pub fn nearest_neighbor(ctx: PathCreateContext) -> Path {
         action,
         dim,
         points: values,
+        norm,
     } = ctx;
 
     let mut visited = HashSet::new();
@@ -39,7 +40,7 @@ pub fn nearest_neighbor(ctx: PathCreateContext) -> Path {
         let min = values
             .iter()
             .filter(|&point| Not::not(visited.contains(point)))
-            .min_by_key(|point| point.dist_squared(last))
+            .min_by_key(|point| point.comparable_dist(last, norm))
             .expect("point was empty even though path is not full");
 
         path.push(min.clone());
@@ -55,7 +56,8 @@ pub fn brute_force(ctx: PathCreateContext) -> Path {
     let PathCreateContext {
         action,
         points: values,
-        ..
+        norm,
+        dim: _,
     } = ctx;
 
     let mut min = Cost::new(f32::INFINITY);
@@ -67,7 +69,7 @@ pub fn brute_force(ctx: PathCreateContext) -> Path {
 
     for (i, permutation) in values.permutations().enumerate() {
         let path = permutation.clone().into_path();
-        let cost = path.cost();
+        let cost = path.cost(norm);
         if cost < min {
             min = cost;
             min_permutation = permutation;
@@ -87,10 +89,13 @@ pub fn greedy(ctx: PathCreateContext) -> Path {
     let PathCreateContext {
         action,
         points: values,
-        ..
+        dim: _,
+        norm,
     } = ctx;
 
-    let mut sorted_edge_iterator = values.edges_iter().sorted_by_key(Edge::dist_squared);
+    let mut sorted_edge_iterator = values
+        .edges_iter()
+        .sorted_by_key(|e| e.comparable_dist(norm));
 
     let mut bimap = BiMap::new();
 
@@ -140,7 +145,8 @@ pub fn christofides(ctx: PathCreateContext) -> Path {
     let PathCreateContext {
         action,
         points: values,
-        ..
+        dim: _,
+        norm,
     } = ctx;
 
     // 1. Finde den MST (minimalen Baum, der alle Knoten verbindet)
@@ -156,7 +162,7 @@ pub fn christofides(ctx: PathCreateContext) -> Path {
             .filter(|edge| {
                 visited.contains(edge.from()) != visited.contains(edge.to()) // einer von beiden
             })
-            .min_by_key(Edge::dist_squared)
+            .min_by_key(|e| e.comparable_dist(norm))
             .expect("no edges");
 
         visited.insert(min_edge.from().clone());

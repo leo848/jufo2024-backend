@@ -9,7 +9,6 @@ use crate::{
     error::Error,
     graph::Path,
     integer_sort,
-    integer_sort::SortedNumbers,
     path::{self, creation::PathCreation, improvement::PathImprovement},
 };
 
@@ -79,6 +78,15 @@ impl PathImproveMethod {
     }
 }
 
+#[derive(Deserialize, Debug, Clone, Copy, Default)]
+#[serde(rename_all = "camelCase")]
+pub enum Norm {
+    Manhattan,
+    #[default]
+    Euclidean,
+    Max,
+}
+
 #[derive(Deserialize, Debug, Clone)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum Action {
@@ -89,11 +97,15 @@ pub enum Action {
     CreatePath {
         dimensions: u8,
         values: Vec<Vec<f32>>,
+        #[serde(default)]
+        norm: Norm,
         method: PathCreateMethod,
     },
     ImprovePath {
         dimensions: u8,
         path: Vec<Vec<f32>>,
+        #[serde(default)]
+        norm: Norm,
         method: PathImproveMethod,
     },
 }

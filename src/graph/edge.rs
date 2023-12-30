@@ -1,7 +1,10 @@
 use bimap::BiMap;
 use serde::Serialize;
 
-use crate::graph::{Cost, Point};
+use crate::{
+    graph::{Cost, Point},
+    typed::Norm,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
 pub struct Edge(Point, Point);
@@ -15,12 +18,12 @@ impl Edge {
         Self(from, to)
     }
 
-    pub fn dist_squared(&self) -> Cost {
-        Point::dist_squared(&self.0, &self.1)
+    pub fn comparable_dist(&self, norm: Norm) -> Cost {
+        Point::comparable_dist(&self.0, &self.1, norm)
     }
 
-    pub fn dist(&self) -> Cost {
-        self.dist_squared().sqrt()
+    pub fn dist(&self, norm: Norm) -> Cost {
+        Point::dist(&self.0, &self.1, norm)
     }
 
     pub fn from(&self) -> &Point {
