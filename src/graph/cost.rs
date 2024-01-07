@@ -1,17 +1,24 @@
-use core::{hash::Hash, iter::Sum};
+use core::{hash::Hash, iter::Sum, ops::Add};
+use std::ops::AddAssign;
 
 use serde::Serialize;
 
+use super::Scalar;
+
 #[derive(Debug, Clone, Copy, PartialEq, Serialize)]
-pub struct Cost(f32);
+pub struct Cost(Scalar);
 
 impl Cost {
-    pub fn new(value: f32) -> Self {
+    pub fn new(value: Scalar) -> Self {
         Cost(value)
     }
 
     pub fn sqrt(self) -> Self {
         Self(self.0.sqrt())
+    }
+
+    pub fn into_inner(self) -> Scalar {
+        self.0
     }
 }
 
@@ -31,6 +38,20 @@ impl Ord for Cost {
 impl Hash for Cost {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.0.to_bits().hash(state);
+    }
+}
+
+impl Add<Scalar> for Cost {
+    type Output = Cost;
+
+    fn add(self, rhs: Scalar) -> Self::Output {
+        Cost(self.0 + rhs)
+    }
+}
+
+impl AddAssign<Scalar> for Cost {
+    fn add_assign(&mut self, rhs: Scalar) {
+        self.0 += rhs;
     }
 }
 

@@ -61,6 +61,53 @@ impl Path {
         self.0.reverse();
         self
     }
+
+    pub fn swap(&mut self, i: usize, j: usize) {
+        self.0.swap(i, j);
+    }
+
+    pub fn get(&self, index: usize) -> Option<&Point> {
+        self.0.get(index)
+    }
+
+    fn cost_delta_under_swap_next(&self, index: usize, norm: Norm) -> Scalar {
+        assert!(index + 1 < self.len());
+        let (ll, rr) = (self.get(index.wrapping_sub(1)), self.get(index + 2));
+        let (lv, rv) = (self.get(index).unwrap(), self.get(index).unwrap());
+        let cmp = |one: &Point, two: Option<&Point>| {
+            two.map(|two| (one, two))
+                .map(|(one, two)| Point::dist(&one, &two, norm).into_inner())
+                .unwrap_or(0.0)
+        };
+        cmp(&lv, rr) + cmp(&rv, ll) - cmp(&lv, ll) - cmp(&rv, rr)
+    }
+
+    pub fn cost_delta_under_swap(&self, index1: usize, index2: usize, norm: Norm) -> Scalar {
+        if index1 == index2 {
+            return 0.0;
+        }
+        if index1 + 1 == index2 {
+            return self.cost_delta_under_swap_next(index1, norm);
+        }
+        if index2 + 1 == index1 {
+            return self.cost_delta_under_swap_next(index2, norm);
+        }
+        assert!(index1 < self.len() && index2 < self.len());
+        let (lv, rv) = (self.get(index1).unwrap(), self.get(index2).unwrap());
+        let get = |idx: usize| self.get(idx);
+        let (ll, lr) = (get(index1.wrapping_sub(1)), get(index1.wrapping_add(1)));
+        let (rl, rr) = (get(index2.wrapping_sub(1)), get(index2.wrapping_add(1)));
+        let cmp = |one: &Point, two: Option<&Point>| {
+            two.map(|two| (one, two))
+                .map(|(one, two)| Point::dist(one, two, norm).into_inner())
+                .unwrap_or(0.0)
+        };
+        cmp(&rv, ll) + cmp(&rv, lr) + cmp(&lv, rl) + cmp(&lv, rr)
+            - cmp(&lv, ll)
+            - cmp(&lv, lr)
+            - cmp(&rv, rl)
+            - cmp(&rv, rr)
+    }
 }
 
 impl Add<&Path> for Path {

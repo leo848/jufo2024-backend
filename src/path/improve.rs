@@ -143,9 +143,77 @@ pub fn three_opt(ctx: PathImproveContext) -> Path {
 }
 
 pub fn swap(ctx: PathImproveContext) -> Path {
-    todo!();
+    let PathImproveContext {
+        action,
+        mut path,
+        dim: _,
+        norm,
+    } = ctx;
+
+    let mut improvement = true;
+    let mut best_cost = path.cost(norm);
+
+    'improvin: while improvement {
+        improvement = false;
+        for i in 0..path.len() {
+            for j in i + 1..path.len() {
+                path.as_mut().swap(i, j);
+                let new_cost = path.cost(norm);
+                if new_cost < best_cost {
+                    action.send(PathImprovement::from_path(path.clone()).progress(
+                        (i * path.len() + j) as f32 / ((path.len()) * path.len()) as f32,
+                    ));
+                    best_cost = new_cost;
+                    improvement = true;
+                    continue 'improvin;
+                } else {
+                    path.as_mut().swap(i, j);
+                }
+            }
+        }
+    }
+
+    path
 }
 
 pub fn simulated_annealing(ctx: PathImproveContext) -> Path {
-    todo!();
+    let PathImproveContext {
+        action,
+        mut path,
+        dim: _,
+        norm,
+    } = ctx;
+
+    let initial_temp: f64 = 0.15;
+    let k: f64 = 0.00000000025;
+    let mut temperature = initial_temp;
+    let mut i = 0;
+    let mut cost = path.cost(norm);
+
+    while temperature > 0.000000005 {
+        if i % (1 << 22) == 0 {
+            action.send(
+                PathImprovement::from_path(path.clone())
+                    .progress(1.0 - (temperature / initial_temp) as f32),
+            );
+        }
+        let index1 = fastrand::usize(..path.len());
+        let index2 = fastrand::usize(..path.len());
+
+        path.swap(index1, index2);
+        let new_cost = path.cost(norm);
+        let cost_delta = new_cost.into_inner() - cost.into_inner();
+        // let cost_delta = path.cost_delta_under_swap(index1, index2, norm);
+        if cost_delta < 0.0 || fastrand::f32() < f32::exp(-((cost_delta) / temperature as f32)) {
+            // path.swap(index1, index2);
+            // cost += cost_delta;
+            cost = new_cost;
+        } else {
+            path.swap(index1, index2);
+        }
+        temperature -= k;
+        i += 1;
+    }
+
+    path
 }
