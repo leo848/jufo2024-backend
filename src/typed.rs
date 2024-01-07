@@ -63,8 +63,10 @@ impl PathCreateMethod {
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum PathImproveMethod {
     Rotate,
+    Swap,
     TwoOpt,
     ThreeOpt,
+    SimulatedAnnealing,
 }
 
 impl PathImproveMethod {
@@ -74,6 +76,8 @@ impl PathImproveMethod {
             Self::Rotate => path::improve::rotate,
             Self::TwoOpt => path::improve::two_opt,
             Self::ThreeOpt => path::improve::three_opt,
+            Self::Swap => path::improve::swap,
+            Self::SimulatedAnnealing => path::improve::simulated_annealing, 
         }
     }
 }
@@ -187,6 +191,7 @@ pub fn poll(event_hub: &EventHub, clients: &mut HashMap<u64, Responder>) -> (Res
                         error(client, Error::BinaryData);
                     }
                     Message::Text(string) => {
+                        eprintln!("recv {}", string);
                         let result = serde_json::from_str(&string);
                         let result: Input = match result {
                             Ok(result) => result,
@@ -212,9 +217,9 @@ pub fn poll(event_hub: &EventHub, clients: &mut HashMap<u64, Responder>) -> (Res
 
 pub fn send(client: &Responder, message: impl Into<Output>) {
     autorestart::update();
-    client.send(Message::Text(
-        serde_json::to_string(&message.into()).expect("Bug: could not serialize string"),
-    ));
+    let string = serde_json::to_string(&message.into()).expect("Bug: could not serialize string");
+    eprintln!("send {}", string);
+    client.send(Message::Text(string));
 }
 
 pub fn error(client: &Responder, error: Error) {

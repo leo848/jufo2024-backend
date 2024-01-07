@@ -141,3 +141,11 @@ pub fn three_opt(ctx: PathImproveContext) -> Path {
 
     path
 }
+
+pub fn swap(ctx: PathImproveContext) -> Path {
+    todo!();
+}
+
+pub fn simulated_annealing(ctx: PathImproveContext) -> Path {
+    todo!();
+}
