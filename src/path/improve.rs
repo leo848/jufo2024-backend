@@ -189,11 +189,13 @@ pub fn simulated_annealing(ctx: PathImproveContext) -> Path {
     let mut temperature = initial_temp;
     let mut i = 0;
     let mut cost = path.cost(norm);
+    let mut path_approx = path.clone();
+    let mut path_approx_cost = cost;
 
     while temperature > 0.000000005 {
         if i % (1 << 22) == 0 {
             action.send(
-                PathImprovement::from_path(path.clone())
+                PathImprovement::from_path(path_approx.clone())
                     .progress(1.0 - (temperature / initial_temp) as f32),
             );
         }
@@ -211,9 +213,13 @@ pub fn simulated_annealing(ctx: PathImproveContext) -> Path {
         } else {
             path.swap(index1, index2);
         }
+        if new_cost < path_approx_cost {
+            path.clone_into(&mut path_approx);
+            path_approx_cost = new_cost;
+        }
         temperature -= k;
         i += 1;
     }
 
-    path
+    path_approx
 }
