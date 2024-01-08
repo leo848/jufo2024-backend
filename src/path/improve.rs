@@ -193,7 +193,7 @@ pub fn simulated_annealing(ctx: PathImproveContext) -> Path {
     let mut path_approx_cost = cost;
 
     while temperature > 0.000000005 {
-        if i % (1 << 22) == 0 {
+        if i % (1 << 24) == 0 {
             action.send(
                 PathImprovement::from_path(path_approx.clone())
                     .progress(1.0 - (temperature / initial_temp) as f32),
