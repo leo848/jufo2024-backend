@@ -4,7 +4,7 @@ use std::{
     hash::Hasher,
     path::Path,
     process::Command,
-    std::os::unix::process::CommandExt,
+    os::unix::process::CommandExt,
     sync::atomic::Ordering
 };
 
