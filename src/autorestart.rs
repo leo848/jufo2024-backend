@@ -1,16 +1,21 @@
+#[cfg(unix)]
 use std::{
     collections::hash_map::DefaultHasher,
     hash::Hasher,
-    os::unix::process::CommandExt,
     path::Path,
     process::Command,
-    sync::atomic::{AtomicU64, Ordering},
+    std::os::unix::process::CommandExt,
+    sync::atomic::Ordering
 };
 
+use std::sync::atomic::AtomicU64;
+
+#[cfg(unix)]
 use chksum::{chksum, hash::MD5};
 
 static HASH: AtomicU64 = AtomicU64::new(u64::MAX);
 
+#[cfg(unix)]
 pub fn update() {
     let digest = chksum::<MD5, _>(Path::new(env!("CARGO_MANIFEST_DIR")).join("src"))
         .expect("Failed to create digest");
@@ -30,3 +35,6 @@ pub fn update() {
 
     HASH.store(hash, Ordering::Relaxed);
 }
+
+#[cfg(not(unix))]
+pub fn update() {}
