@@ -35,7 +35,8 @@ Auf dem Port 3141 wird ein Webserver gestartet, der einkommende Requests über d
     - Einen bestehenden Pfad verbessern
     - Algorithmen:
         - Rotieren
+        - Swap
         - 2-opt
         - 3-opt
-        - Simulated Annealing (geplant)
+        - Simulated Annealing
         - Ameisenkolonie (geplant)
