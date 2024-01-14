@@ -1,3 +1,4 @@
+use crate::graph::Edge;
 use core::ops::Not;
 use std::collections::HashSet;
 
@@ -97,7 +98,8 @@ pub fn greedy(ctx: PathCreateContext) -> Path {
         .edges_iter()
         .sorted_by_key(|e| e.comparable_dist(norm));
 
-    let mut bimap = BiMap::new();
+    let mut bimap = BiMap::with_capacity(values.len());
+    let mut separate_list = Edges::new();
 
     'outer: while bimap.len() < values.len() - 1 {
         let next_try = sorted_edge_iterator
@@ -107,6 +109,8 @@ pub fn greedy(ctx: PathCreateContext) -> Path {
         let insert = bimap.insert_no_overwrite(next_try.from().clone(), next_try.to().clone());
         if insert.is_err() {
             continue;
+        } else {
+            separate_list.push(Edge::new(next_try.from().clone(), next_try.to().clone()));
         }
 
         // Ist next_try.0 Teil eines Zyklus? Falls ja, vorab abbrechen.
@@ -115,13 +119,14 @@ pub fn greedy(ctx: PathCreateContext) -> Path {
             if next == next_try.from() {
                 // Einfügen rückgängig machen
                 bimap.remove_by_left(next_try.from());
+                separate_list.pop();
                 continue 'outer;
             }
             element = next;
         }
 
         action.send(
-            PathCreation::from_edges(Edges::from_bimap(bimap.clone()))
+            PathCreation::from_edges(separate_list.clone())
                 .progress(bimap.len() as f32 / values.len() as f32),
         );
     }

@@ -47,6 +47,10 @@ impl Edges {
         self.0.push(edge);
     }
 
+    pub fn pop(&mut self) -> Option<Edge> {
+        self.0.pop()
+    }
+
     pub fn from_bimap(map: BiMap<Point, Point>) -> Self {
         map.into_iter().map(|(from, to)| Edge(from, to)).collect()
     }
