@@ -23,8 +23,8 @@ use crate::{
 
 mod action;
 mod autorestart;
-mod error;
 mod dist_graph;
+mod error;
 mod integer_sort;
 mod path;
 mod typed;

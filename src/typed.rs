@@ -6,8 +6,8 @@ use simple_websockets::{Event, EventHub, Message, Responder};
 use crate::{
     action::{IntegerSortContext, PathCreateContext, PathImproveContext},
     autorestart,
-    error::Error,
     dist_graph::Path,
+    error::Error,
     integer_sort,
     path::{self, creation::PathCreation, improvement::PathImprovement},
 };

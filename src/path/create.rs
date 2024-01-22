@@ -1,4 +1,3 @@
-use crate::dist_graph::Edge;
 use core::ops::Not;
 use std::collections::HashSet;
 
@@ -7,7 +6,7 @@ use itertools::Itertools;
 
 use crate::{
     action::PathCreateContext,
-    dist_graph::{Cost, Edges, Path, Points},
+    dist_graph::{Cost, Edge, Edges, Path, Points},
     path::creation::PathCreation,
     util::factorial,
 };

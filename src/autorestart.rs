@@ -1,14 +1,9 @@
+use std::sync::atomic::AtomicU64;
 #[cfg(unix)]
 use std::{
-    collections::hash_map::DefaultHasher,
-    hash::Hasher,
-    path::Path,
-    process::Command,
-    os::unix::process::CommandExt,
-    sync::atomic::Ordering
+    collections::hash_map::DefaultHasher, hash::Hasher, os::unix::process::CommandExt, path::Path,
+    process::Command, sync::atomic::Ordering,
 };
-
-use std::sync::atomic::AtomicU64;
 
 #[cfg(unix)]
 use chksum::{chksum, hash::MD5};
