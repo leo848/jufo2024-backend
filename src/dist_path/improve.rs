@@ -1,11 +1,11 @@
 use crate::{
-    action::PathImproveContext,
+    action::DistPathImproveContext,
     dist_graph::{Edge, Path},
-    path::improvement::PathImprovement,
+    dist_path::improvement::PathImprovement,
 };
 
-pub fn rotate(ctx: PathImproveContext) -> Path {
-    let PathImproveContext {
+pub fn rotate(ctx: DistPathImproveContext) -> Path {
+    let DistPathImproveContext {
         action,
         path: old_path,
         dim,
@@ -39,13 +39,13 @@ pub fn rotate(ctx: PathImproveContext) -> Path {
     }
 }
 
-pub fn two_opt(ctx: PathImproveContext) -> Path {
+pub fn two_opt(ctx: DistPathImproveContext) -> Path {
     fn two_opt_swap(path: &mut Path, v1: usize, v2: usize) {
         let path = path.as_mut();
         path[v1 + 1..v2].reverse();
     }
 
-    let PathImproveContext {
+    let DistPathImproveContext {
         action,
         mut path,
         dim: _,
@@ -79,7 +79,7 @@ pub fn two_opt(ctx: PathImproveContext) -> Path {
     path
 }
 
-pub fn three_opt(ctx: PathImproveContext) -> Path {
+pub fn three_opt(ctx: DistPathImproveContext) -> Path {
     fn three_opt_swap(path: Path, method: u8, a: usize, b: usize, c: usize) -> Path {
         let [a, c, e] = [a, b, c];
         let [b, d, f] = [a + 1, b + 1, c + 1];
@@ -97,7 +97,7 @@ pub fn three_opt(ctx: PathImproveContext) -> Path {
         }
     }
 
-    let PathImproveContext {
+    let DistPathImproveContext {
         action,
         dim: _,
         mut path,
@@ -142,8 +142,8 @@ pub fn three_opt(ctx: PathImproveContext) -> Path {
     path
 }
 
-pub fn swap(ctx: PathImproveContext) -> Path {
-    let PathImproveContext {
+pub fn swap(ctx: DistPathImproveContext) -> Path {
+    let DistPathImproveContext {
         action,
         mut path,
         dim: _,
@@ -176,8 +176,8 @@ pub fn swap(ctx: PathImproveContext) -> Path {
     path
 }
 
-pub fn simulated_annealing(ctx: PathImproveContext) -> Path {
-    let PathImproveContext {
+pub fn simulated_annealing(ctx: DistPathImproveContext) -> Path {
+    let DistPathImproveContext {
         action,
         mut path,
         dim: _,

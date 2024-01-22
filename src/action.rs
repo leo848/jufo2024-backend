@@ -3,8 +3,7 @@ use std::{thread, time::Duration};
 use simple_websockets::Responder;
 
 use crate::{
-    typed::{send, Norm},
-    Output, Path, Points,
+    dist_graph, typed::{send, Norm}, Output
 };
 
 #[derive(Clone)]
@@ -27,17 +26,17 @@ pub struct IntegerSortContext {
 }
 
 #[derive(Clone)]
-pub struct PathCreateContext {
+pub struct DistPathCreateContext {
     pub action: ActionContext,
     pub dim: u8,
-    pub points: Points,
+    pub points: dist_graph::Points,
     pub norm: Norm,
 }
 
 #[derive(Clone)]
-pub struct PathImproveContext {
+pub struct DistPathImproveContext {
     pub action: ActionContext,
     pub dim: u8,
-    pub path: Path,
+    pub path: dist_graph::Path,
     pub norm: Norm,
 }

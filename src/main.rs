@@ -9,7 +9,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use action::{ActionContext, IntegerSortContext, PathCreateContext, PathImproveContext};
+use action::{ActionContext, IntegerSortContext, DistPathCreateContext, DistPathImproveContext};
 use dist_graph::Points;
 use simple_websockets::Responder;
 use typed::{Action, Output};
@@ -17,7 +17,7 @@ use typed::{Action, Output};
 use crate::{
     dist_graph::Path,
     integer_sort::SortedNumbers,
-    path::{creation::PathCreation, improvement::PathImprovement},
+    dist_path::{creation::PathCreation, improvement::PathImprovement},
     typed::Input,
 };
 
@@ -27,7 +27,7 @@ mod dist_graph;
 mod error;
 mod graph;
 mod integer_sort;
-mod path;
+mod dist_path;
 mod typed;
 mod util;
 
@@ -83,7 +83,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
         } => {
             let method = method.implementation();
             let points = Points::try_new_raw(values, dim).expect("should send valid data");
-            let ctx = PathCreateContext {
+            let ctx = DistPathCreateContext {
                 action: ActionContext {
                     client: client.clone(),
                     latency,
@@ -104,7 +104,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
         } => {
             let method = method.implementation();
             let old_path = Path::try_new_raw(path, dim).expect("should send valid data");
-            let ctx = PathImproveContext {
+            let ctx = DistPathImproveContext {
                 action: ActionContext {
                     client: client.clone(),
                     latency,

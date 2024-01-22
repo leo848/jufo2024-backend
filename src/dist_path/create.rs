@@ -5,26 +5,26 @@ use bimap::BiMap;
 use itertools::Itertools;
 
 use crate::{
-    action::PathCreateContext,
+    action::DistPathCreateContext,
     dist_graph::{Cost, Edge, Edges, Path, Points},
-    path::creation::PathCreation,
+    dist_path::creation::PathCreation,
     util::factorial,
 };
 
-pub fn random(ctx: PathCreateContext) -> Path {
+pub fn random(ctx: DistPathCreateContext) -> Path {
     let values = ctx.points;
     let mut path = values.into_path();
     fastrand::shuffle(path.as_mut());
     path
 }
 
-pub fn transmute(ctx: PathCreateContext) -> Path {
+pub fn transmute(ctx: DistPathCreateContext) -> Path {
     let values = ctx.points;
     values.into_path()
 }
 
-pub fn nearest_neighbor(ctx: PathCreateContext) -> Path {
-    let PathCreateContext {
+pub fn nearest_neighbor(ctx: DistPathCreateContext) -> Path {
+    let DistPathCreateContext {
         action,
         dim,
         points: values,
@@ -52,8 +52,8 @@ pub fn nearest_neighbor(ctx: PathCreateContext) -> Path {
     path
 }
 
-pub fn brute_force(ctx: PathCreateContext) -> Path {
-    let PathCreateContext {
+pub fn brute_force(ctx: DistPathCreateContext) -> Path {
+    let DistPathCreateContext {
         action,
         points: values,
         norm,
@@ -85,8 +85,8 @@ pub fn brute_force(ctx: PathCreateContext) -> Path {
     min_permutation.into_path()
 }
 
-pub fn greedy(ctx: PathCreateContext) -> Path {
-    let PathCreateContext {
+pub fn greedy(ctx: DistPathCreateContext) -> Path {
+    let DistPathCreateContext {
         action,
         points: values,
         dim: _,
@@ -145,8 +145,8 @@ pub fn greedy(ctx: PathCreateContext) -> Path {
     path
 }
 
-pub fn christofides(ctx: PathCreateContext) -> Path {
-    let PathCreateContext {
+pub fn christofides(ctx: DistPathCreateContext) -> Path {
+    let DistPathCreateContext {
         action,
         points: values,
         dim: _,

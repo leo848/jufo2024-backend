@@ -4,12 +4,12 @@ use serde::{Deserialize, Serialize};
 use simple_websockets::{Event, EventHub, Message, Responder};
 
 use crate::{
-    action::{IntegerSortContext, PathCreateContext, PathImproveContext},
+    action::{IntegerSortContext, DistPathCreateContext, DistPathImproveContext},
     autorestart,
     dist_graph::Path,
     error::Error,
     integer_sort,
-    path::{self, creation::PathCreation, improvement::PathImprovement},
+    dist_path::{self, creation::PathCreation, improvement::PathImprovement},
 };
 
 #[derive(Deserialize, Debug, Clone, Copy)]
@@ -47,14 +47,14 @@ pub enum PathCreateMethod {
 
 impl PathCreateMethod {
     #[inline]
-    pub fn implementation(self) -> fn(PathCreateContext) -> Path {
+    pub fn implementation(self) -> fn(DistPathCreateContext) -> Path {
         match self {
-            Self::Transmute => path::create::transmute,
-            Self::Random => path::create::random,
-            Self::NearestNeighbor => path::create::nearest_neighbor,
-            Self::BruteForce => path::create::brute_force,
-            Self::Greedy => path::create::greedy,
-            Self::Christofides => path::create::christofides,
+            Self::Transmute => dist_path::create::transmute,
+            Self::Random => dist_path::create::random,
+            Self::NearestNeighbor => dist_path::create::nearest_neighbor,
+            Self::BruteForce => dist_path::create::brute_force,
+            Self::Greedy => dist_path::create::greedy,
+            Self::Christofides => dist_path::create::christofides,
         }
     }
 }
@@ -71,13 +71,13 @@ pub enum PathImproveMethod {
 
 impl PathImproveMethod {
     #[inline]
-    pub fn implementation(self) -> fn(PathImproveContext) -> Path {
+    pub fn implementation(self) -> fn(DistPathImproveContext) -> Path {
         match self {
-            Self::Rotate => path::improve::rotate,
-            Self::TwoOpt => path::improve::two_opt,
-            Self::ThreeOpt => path::improve::three_opt,
-            Self::Swap => path::improve::swap,
-            Self::SimulatedAnnealing => path::improve::simulated_annealing,
+            Self::Rotate => dist_path::improve::rotate,
+            Self::TwoOpt => dist_path::improve::two_opt,
+            Self::ThreeOpt => dist_path::improve::three_opt,
+            Self::Swap => dist_path::improve::swap,
+            Self::SimulatedAnnealing => dist_path::improve::simulated_annealing,
         }
     }
 }
