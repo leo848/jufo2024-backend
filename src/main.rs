@@ -81,7 +81,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
             method,
             norm,
         } => {
-            let method = method.implementation();
+            let method = method.dist_implementation();
             let points = Points::try_new_raw(values, dim).expect("should send valid data");
             let ctx = DistPathCreateContext {
                 action: ActionContext {
@@ -102,7 +102,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
             method,
             norm,
         } => {
-            let method = method.implementation();
+            let method = method.dist_implementation();
             let old_path = Path::try_new_raw(path, dim).expect("should send valid data");
             let ctx = DistPathImproveContext {
                 action: ActionContext {

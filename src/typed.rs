@@ -47,7 +47,7 @@ pub enum PathCreateMethod {
 
 impl PathCreateMethod {
     #[inline]
-    pub fn implementation(self) -> fn(DistPathCreateContext) -> Path {
+    pub fn dist_implementation(self) -> fn(DistPathCreateContext) -> Path {
         match self {
             Self::Transmute => dist_path::create::transmute,
             Self::Random => dist_path::create::random,
@@ -71,7 +71,7 @@ pub enum PathImproveMethod {
 
 impl PathImproveMethod {
     #[inline]
-    pub fn implementation(self) -> fn(DistPathImproveContext) -> Path {
+    pub fn dist_implementation(self) -> fn(DistPathImproveContext) -> Path {
         match self {
             Self::Rotate => dist_path::improve::rotate,
             Self::TwoOpt => dist_path::improve::two_opt,
