@@ -120,6 +120,10 @@ impl Points {
     pub fn iter(&self) -> impl Iterator<Item = &'_ Point> + '_ {
         self.0.iter()
     }
+
+    pub fn into_vec(self) -> Vec<Point> {
+        self.0
+    }
 }
 
 impl<Idx: SliceIndex<[Point], Output = Point>> Index<Idx> for Points {

@@ -7,9 +7,9 @@ use serde::Serialize;
 use crate::{dist_graph::Scalar, util::HashScalar};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Sum)]
-pub struct Cost(HashScalar);
+pub struct Weight(HashScalar);
 
-impl Cost {
+impl Weight {
     pub fn new(value: Scalar) -> Self {
         Self(HashScalar::new(value))
     }
@@ -23,21 +23,21 @@ impl Cost {
     }
 }
 
-impl Add<Scalar> for Cost {
+impl Add<Scalar> for Weight {
     type Output = Self;
     fn add(self, rhs: Scalar) -> Self::Output {
         Self(self.0 + rhs)
     }
 }
 
-impl Add for Cost {
+impl Add for Weight {
     type Output = Self;
     fn add(self, rhs: Self) -> Self::Output {
         self + rhs.0.into_inner()
     }
 }
 
-impl Sum<f32> for Cost {
+impl Sum<f32> for Weight {
     fn sum<I: Iterator<Item = f32>>(iter: I) -> Self {
         Self::new(iter.sum())
     }

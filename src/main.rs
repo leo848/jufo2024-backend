@@ -25,6 +25,7 @@ mod action;
 mod autorestart;
 mod dist_graph;
 mod error;
+mod graph;
 mod integer_sort;
 mod path;
 mod typed;
