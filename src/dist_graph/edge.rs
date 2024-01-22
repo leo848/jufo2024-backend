@@ -2,7 +2,7 @@ use bimap::BiMap;
 use serde::Serialize;
 
 use crate::{
-    graph::{Cost, Point},
+    dist_graph::{Cost, Point},
     typed::Norm,
 };
 

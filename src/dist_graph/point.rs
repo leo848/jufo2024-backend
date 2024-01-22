@@ -5,7 +5,7 @@ use itertools::Itertools;
 use serde::Serialize;
 
 use crate::{
-    graph::{Cost, Edge, Path, Scalar},
+    dist_graph::{Cost, Edge, Path, Scalar},
     typed::Norm,
 };
 #[derive(Debug, Clone, PartialEq, Serialize)]

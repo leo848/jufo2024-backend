@@ -5,7 +5,7 @@ use itertools::Itertools;
 use serde::Serialize;
 
 use crate::{
-    graph::{Cost, Edge, Edges, Point, Scalar},
+    dist_graph::{Cost, Edge, Edges, Point, Scalar},
     typed::Norm,
 };
 

@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 use crate::{
-    graph::{Edges, Path},
+    dist_graph::{Edges, Path},
     Output,
 };
 

@@ -10,12 +10,12 @@ use std::{
 };
 
 use action::{ActionContext, IntegerSortContext, PathCreateContext, PathImproveContext};
-use graph::Points;
+use dist_graph::Points;
 use simple_websockets::Responder;
 use typed::{Action, Output};
 
 use crate::{
-    graph::Path,
+    dist_graph::Path,
     integer_sort::SortedNumbers,
     path::{creation::PathCreation, improvement::PathImprovement},
     typed::Input,
@@ -24,7 +24,7 @@ use crate::{
 mod action;
 mod autorestart;
 mod error;
-mod graph;
+mod dist_graph;
 mod integer_sort;
 mod path;
 mod typed;

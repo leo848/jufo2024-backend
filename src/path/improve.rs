@@ -1,6 +1,6 @@
 use crate::{
     action::PathImproveContext,
-    graph::{Edge, Path},
+    dist_graph::{Edge, Path},
     path::improvement::PathImprovement,
 };
 

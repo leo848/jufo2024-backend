@@ -7,7 +7,7 @@ use crate::{
     action::{IntegerSortContext, PathCreateContext, PathImproveContext},
     autorestart,
     error::Error,
-    graph::Path,
+    dist_graph::Path,
     integer_sort,
     path::{self, creation::PathCreation, improvement::PathImprovement},
 };
