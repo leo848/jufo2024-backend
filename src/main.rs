@@ -15,7 +15,6 @@ use simple_websockets::Responder;
 use typed::{Action, Output};
 
 use crate::{
-    dist_graph::Path,
     integer_sort::SortedNumbers,
     dist_path::{creation::PathCreation, improvement::PathImprovement},
     typed::Input,
@@ -103,7 +102,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
             norm,
         } => {
             let method = method.dist_implementation();
-            let old_path = Path::try_new_raw(path, dim).expect("should send valid data");
+            let old_path = dist_graph::Path::try_new_raw(path, dim).expect("should send valid data");
             let ctx = DistPathImproveContext {
                 action: ActionContext {
                     client: client.clone(),

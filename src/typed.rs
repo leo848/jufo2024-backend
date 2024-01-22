@@ -6,7 +6,7 @@ use simple_websockets::{Event, EventHub, Message, Responder};
 use crate::{
     action::{IntegerSortContext, DistPathCreateContext, DistPathImproveContext},
     autorestart,
-    dist_graph::Path,
+    dist_graph,
     error::Error,
     integer_sort,
     dist_path::{self, creation::PathCreation, improvement::PathImprovement},
@@ -47,7 +47,7 @@ pub enum PathCreateMethod {
 
 impl PathCreateMethod {
     #[inline]
-    pub fn dist_implementation(self) -> fn(DistPathCreateContext) -> Path {
+    pub fn dist_implementation(self) -> fn(DistPathCreateContext) -> dist_graph::Path {
         match self {
             Self::Transmute => dist_path::create::transmute,
             Self::Random => dist_path::create::random,
@@ -71,7 +71,7 @@ pub enum PathImproveMethod {
 
 impl PathImproveMethod {
     #[inline]
-    pub fn dist_implementation(self) -> fn(DistPathImproveContext) -> Path {
+    pub fn dist_implementation(self) -> fn(DistPathImproveContext) -> dist_graph::Path {
         match self {
             Self::Rotate => dist_path::improve::rotate,
             Self::TwoOpt => dist_path::improve::two_opt,
