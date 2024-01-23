@@ -12,6 +12,7 @@ use super::Edge;
 #[derive(Constructor, Debug, Clone, Serialize)]
 pub struct Path(Vec<usize>);
 
+#[allow(dead_code)]
 impl Path {
     pub fn iter(&self) -> impl Iterator<Item = usize> + '_ {
         self.0.iter().copied()

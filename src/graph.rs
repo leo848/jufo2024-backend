@@ -29,6 +29,7 @@ impl Graph {
         Matrix::new(values).map(Self::from_matrix)
     }
 
+    #[allow(dead_code)]
     pub fn from_points(points: Points, norm: Norm) -> Self {
         let costs = points
             .iter()

@@ -22,6 +22,7 @@ impl PathImprovement {
         }
     }
 
+    #[allow(dead_code)]
     pub fn better(self, better: bool) -> Self {
         Self { better, ..self }
     }

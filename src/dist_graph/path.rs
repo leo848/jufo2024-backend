@@ -66,10 +66,12 @@ impl Path {
         self.0.swap(i, j);
     }
 
+    #[allow(dead_code)]
     pub fn get(&self, index: usize) -> Option<&Point> {
         self.0.get(index)
     }
 
+    #[allow(dead_code)]
     fn cost_delta_under_swap_next(&self, index: usize, norm: Norm) -> Scalar {
         assert!(index + 1 < self.len());
         let (ll, rr) = (self.get(index.wrapping_sub(1)), self.get(index + 2));
@@ -82,6 +84,7 @@ impl Path {
         cmp(&lv, rr) + cmp(&rv, ll) - cmp(&lv, ll) - cmp(&rv, rr)
     }
 
+    #[allow(dead_code)]
     pub fn cost_delta_under_swap(&self, index1: usize, index2: usize, norm: Norm) -> Scalar {
         if index1 == index2 {
             return 0.0;

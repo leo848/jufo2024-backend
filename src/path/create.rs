@@ -11,7 +11,7 @@ pub fn transmute(ctx: PathCreateContext) -> Path {
 }
 
 pub fn random(ctx: PathCreateContext) -> Path {
-    let PathCreateContext { action, graph } = ctx;
+    let PathCreateContext { action: _, graph } = ctx;
     let mut vec = graph.node_indices().collect_vec();
     fastrand::shuffle(&mut vec);
     Path::new(vec)

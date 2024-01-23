@@ -1,4 +1,3 @@
-use bimap::BiMap;
 use serde::Serialize;
 
 use crate::{
@@ -49,10 +48,6 @@ impl Edges {
 
     pub fn pop(&mut self) -> Option<Edge> {
         self.0.pop()
-    }
-
-    pub fn from_bimap(map: BiMap<Point, Point>) -> Self {
-        map.into_iter().map(|(from, to)| Edge(from, to)).collect()
     }
 
     pub fn into_iter(self) -> impl Iterator<Item = Edge> {

@@ -16,6 +16,7 @@ pub struct PathCreation {
 }
 
 impl PathCreation {
+    #[allow(dead_code)]
     pub fn from_edges(edges: Vec<Edge>) -> Self {
         Self {
             current_edges: edges,
