@@ -45,6 +45,6 @@ impl PathImprovement {
 
 impl From<PathImprovement> for Output {
     fn from(value: PathImprovement) -> Self {
-        Output::PathImprovement(value)
+        Output::DistPathImprovement(value)
     }
 }

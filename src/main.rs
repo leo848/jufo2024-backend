@@ -74,7 +74,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
 
             typed::send(client, SortedNumbers::new(&numbers).done());
         }
-        Action::CreatePath {
+        Action::CreateDistPath {
             dimensions: dim,
             values,
             method,
@@ -95,7 +95,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
 
             typed::send(client, PathCreation::done(path));
         }
-        Action::ImprovePath {
+        Action::ImproveDistPath {
             dimensions: dim,
             path,
             method,

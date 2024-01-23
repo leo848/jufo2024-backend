@@ -50,6 +50,6 @@ impl PathCreation {
 
 impl From<PathCreation> for Output {
     fn from(value: PathCreation) -> Self {
-        Output::PathCreation(value)
+        Output::DistPathCreation(value)
     }
 }

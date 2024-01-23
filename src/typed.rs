@@ -98,14 +98,14 @@ pub enum Action {
         numbers: Vec<u64>,
         algorithm: IntegerSortAlgorithm,
     },
-    CreatePath {
+    CreateDistPath {
         dimensions: u8,
         values: Vec<Vec<f32>>,
         #[serde(default)]
         norm: Norm,
         method: PathCreateMethod,
     },
-    ImprovePath {
+    ImproveDistPath {
         dimensions: u8,
         path: Vec<Vec<f32>>,
         #[serde(default)]
@@ -154,8 +154,8 @@ pub enum Output {
         numbers: Vec<u64>,
         highlight: Vec<(usize, Highlight)>,
     },
-    PathCreation(PathCreation),
-    PathImprovement(PathImprovement),
+    DistPathCreation(PathCreation),
+    DistPathImprovement(PathImprovement),
     #[serde(rename_all = "camelCase")]
     Latency {
         time_millis: u128,
