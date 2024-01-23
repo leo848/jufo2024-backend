@@ -1,7 +1,7 @@
 use crate::{
     action::DistPathImproveContext,
     dist_graph::{Edge, Path},
-    dist_path::improvement::PathImprovement,
+    dist_path::improvement::DistPathImprovement,
 };
 
 pub fn rotate(ctx: DistPathImproveContext) -> Path {
@@ -16,7 +16,7 @@ pub fn rotate(ctx: DistPathImproveContext) -> Path {
         let mut inner = old_path.clone().into_inner();
         inner.rotate_left(i);
         let rotated = Path::try_new(inner, dim).unwrap();
-        action.send(PathImprovement::from_path(rotated).better(false));
+        action.send(DistPathImprovement::from_path(rotated).better(false));
     }
 
     let edges = old_path.clone().into_edges();
@@ -62,7 +62,7 @@ pub fn two_opt(ctx: DistPathImproveContext) -> Path {
                 two_opt_swap(&mut path, i, j);
                 let new_cost = path.cost(norm);
                 if new_cost < best_cost {
-                    action.send(PathImprovement::from_path(path.clone()).progress(
+                    action.send(DistPathImprovement::from_path(path.clone()).progress(
                         (i * path.len() + j) as f32 / ((path.len()) * path.len()) as f32,
                     ));
                 }
@@ -118,7 +118,7 @@ pub fn three_opt(ctx: DistPathImproveContext) -> Path {
                         let new_cost = path.cost(norm);
                         if new_cost < best_cost || (k == j + 2 && j == i + 2) {
                             action.send(
-                                PathImprovement::from_path(path.clone())
+                                DistPathImprovement::from_path(path.clone())
                                     .progress(
                                         (i * path.len() + j) as f32
                                             / ((path.len()) * path.len()) as f32,
@@ -160,7 +160,7 @@ pub fn swap(ctx: DistPathImproveContext) -> Path {
                 path.as_mut().swap(i, j);
                 let new_cost = path.cost(norm);
                 if new_cost < best_cost {
-                    action.send(PathImprovement::from_path(path.clone()).progress(
+                    action.send(DistPathImprovement::from_path(path.clone()).progress(
                         (i * path.len() + j) as f32 / ((path.len()) * path.len()) as f32,
                     ));
                     best_cost = new_cost;
@@ -195,7 +195,7 @@ pub fn simulated_annealing(ctx: DistPathImproveContext) -> Path {
     while temperature > 0.000000005 {
         if i % (1 << 24) == 0 {
             action.send(
-                PathImprovement::from_path(path_approx.clone())
+                DistPathImprovement::from_path(path_approx.clone())
                     .progress(1.0 - (temperature / initial_temp) as f32),
             );
         }

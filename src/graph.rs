@@ -1,7 +1,9 @@
+use core::ops::Range;
 use itertools::Itertools;
-use matrix::Matrix;
-use path::Path;
-use weight::Weight;
+pub use matrix::Matrix;
+pub use path::Path;
+pub use weight::Weight;
+pub use edge::Edge;
 
 use crate::{
     dist_graph::{Point, Points, Scalar},
@@ -10,6 +12,7 @@ use crate::{
 
 mod matrix;
 mod path;
+mod edge;
 mod weight;
 
 #[derive(Debug, Clone)]
@@ -52,5 +55,9 @@ impl Graph {
             .tuple_windows()
             .map(|(ni1, ni2)| self.weight(ni1, ni2))
             .sum()
+    }
+
+    pub fn node_indices(&self) -> Range<usize> {
+        0..self.size()
     }
 }

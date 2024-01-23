@@ -7,20 +7,20 @@ use itertools::Itertools;
 use crate::{
     action::DistPathCreateContext,
     dist_graph::{Cost, Edge, Edges, Path, Points},
-    dist_path::creation::PathCreation,
+    dist_path::creation::DistPathCreation,
     util::factorial,
 };
+
+pub fn transmute(ctx: DistPathCreateContext) -> Path {
+    let values = ctx.points;
+    values.into_path()
+}
 
 pub fn random(ctx: DistPathCreateContext) -> Path {
     let values = ctx.points;
     let mut path = values.into_path();
     fastrand::shuffle(path.as_mut());
     path
-}
-
-pub fn transmute(ctx: DistPathCreateContext) -> Path {
-    let values = ctx.points;
-    values.into_path()
 }
 
 pub fn nearest_neighbor(ctx: DistPathCreateContext) -> Path {
@@ -45,7 +45,7 @@ pub fn nearest_neighbor(ctx: DistPathCreateContext) -> Path {
 
         path.push(min.clone());
         action.send(
-            PathCreation::from_path(path.clone()).progress(path.len() as f32 / values.len() as f32),
+            DistPathCreation::from_path(path.clone()).progress(path.len() as f32 / values.len() as f32),
         );
     }
 
@@ -76,7 +76,7 @@ pub fn brute_force(ctx: DistPathCreateContext) -> Path {
         }
         if ((i & (send_every - 1)) == 0) || cost < min {
             action.send(
-                PathCreation::from_path(min_permutation.clone().into_path())
+                DistPathCreation::from_path(min_permutation.clone().into_path())
                     .progress(i as f32 / permutation_count as f32),
             );
         }
@@ -125,7 +125,7 @@ pub fn greedy(ctx: DistPathCreateContext) -> Path {
         }
 
         action.send(
-            PathCreation::from_edges(separate_list.clone())
+            DistPathCreation::from_edges(separate_list.clone())
                 .progress(bimap.len() as f32 / values.len() as f32),
         );
     }
@@ -173,7 +173,7 @@ pub fn christofides(ctx: DistPathCreateContext) -> Path {
         visited.insert(min_edge.to().clone());
         edges.push(min_edge);
 
-        action.send(PathCreation::from_edges(edges.clone()))
+        action.send(DistPathCreation::from_edges(edges.clone()))
     }
 
     let mst = edges;

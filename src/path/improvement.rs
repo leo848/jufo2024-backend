@@ -1,10 +1,10 @@
 use serde::Serialize;
 
-use crate::{dist_graph::Path, Output};
+use crate::{graph::Path, Output};
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct DistPathImprovement {
+pub struct PathImprovement {
     done: bool,
     better: bool,
     current_path: Path,
@@ -12,7 +12,7 @@ pub struct DistPathImprovement {
     progress: Option<f32>,
 }
 
-impl DistPathImprovement {
+impl PathImprovement {
     pub fn from_path(path: Path) -> Self {
         Self {
             current_path: path,
@@ -22,7 +22,7 @@ impl DistPathImprovement {
         }
     }
 
-    pub fn better(self, better: bool) -> DistPathImprovement {
+    pub fn better(self, better: bool) -> Self {
         Self { better, ..self }
     }
 
@@ -43,8 +43,8 @@ impl DistPathImprovement {
     }
 }
 
-impl From<DistPathImprovement> for Output {
-    fn from(value: DistPathImprovement) -> Self {
-        Output::DistPathImprovement(value)
+impl From<PathImprovement> for Output {
+    fn from(value: PathImprovement) -> Self {
+        Output::PathImprovement(value)
     }
 }

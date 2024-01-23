@@ -1,15 +1,13 @@
+use crate::action::PathImproveContext;
+use crate::path::improvement::PathImprovement;
+use crate::path::creation::PathCreation;
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 use simple_websockets::{Event, EventHub, Message, Responder};
 
 use crate::{
-    action::{IntegerSortContext, DistPathCreateContext, DistPathImproveContext},
-    autorestart,
-    dist_graph,
-    error::Error,
-    integer_sort,
-    dist_path::{self, creation::PathCreation, improvement::PathImprovement},
+    action::{DistPathCreateContext, DistPathImproveContext, IntegerSortContext, PathCreateContext}, autorestart, dist_graph, dist_path::{self, creation::DistPathCreation, improvement::DistPathImprovement}, path, error::Error, graph, integer_sort
 };
 
 #[derive(Deserialize, Debug, Clone, Copy)]
@@ -57,6 +55,16 @@ impl PathCreateMethod {
             Self::Christofides => dist_path::create::christofides,
         }
     }
+
+    #[inline]
+    pub fn implementation(self) -> fn(PathCreateContext) -> graph::Path {
+        match self {
+            Self::Transmute => path::create::transmute,
+            Self::Random => path::create::random,
+            Self::NearestNeighbor => path::create::nearest_neighbor,
+            _ => todo!(),
+        }
+    }
 }
 
 #[derive(Deserialize, Debug, Clone, Copy)]
@@ -78,6 +86,13 @@ impl PathImproveMethod {
             Self::ThreeOpt => dist_path::improve::three_opt,
             Self::Swap => dist_path::improve::swap,
             Self::SimulatedAnnealing => dist_path::improve::simulated_annealing,
+        }
+    }
+
+    #[inline]
+    pub fn implementation(self) -> fn(PathImproveContext) -> graph::Path {
+        match self {
+            _ => todo!(),
         }
     }
 }
@@ -112,6 +127,15 @@ pub enum Action {
         norm: Norm,
         method: PathImproveMethod,
     },
+    CreatePath {
+        matrix: Vec<Vec<f32>>,
+        method: PathCreateMethod,
+    },
+    ImprovePath {
+        path: Vec<usize>,
+        matrix: Vec<Vec<f32>>,
+        method: PathImproveMethod,
+    }
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -154,8 +178,10 @@ pub enum Output {
         numbers: Vec<u64>,
         highlight: Vec<(usize, Highlight)>,
     },
-    DistPathCreation(PathCreation),
-    DistPathImprovement(PathImprovement),
+    DistPathCreation(DistPathCreation),
+    DistPathImprovement(DistPathImprovement),
+    PathCreation(PathCreation),
+    PathImprovement(PathImprovement),
     #[serde(rename_all = "camelCase")]
     Latency {
         time_millis: u128,

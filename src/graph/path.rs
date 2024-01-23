@@ -4,8 +4,12 @@ use core::{
 };
 
 use derive_more::Constructor;
+use itertools::Itertools;
+use serde::Serialize;
 
-#[derive(Constructor, Debug, Clone)]
+use super::Edge;
+
+#[derive(Constructor, Debug, Clone, Serialize)]
 pub struct Path(Vec<usize>);
 
 impl Path {
@@ -19,6 +23,10 @@ impl Path {
 
     pub fn into_inner(self) -> Vec<usize> {
         self.0
+    }
+
+    pub fn into_edges(self) -> Vec<Edge> {
+        self.iter().tuple_windows().map(|(l, r)| Edge::new(l, r)).collect()
     }
 
     pub fn len(&self) -> usize {

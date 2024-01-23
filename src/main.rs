@@ -4,19 +4,22 @@
 #![allow(clippy::cast_precision_loss)]
 #![allow(clippy::module_name_repetitions)]
 
+use crate::path::creation::PathCreation;
 use std::{
     collections::HashMap,
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use action::{ActionContext, IntegerSortContext, DistPathCreateContext, DistPathImproveContext};
+use action::{ActionContext, DistPathCreateContext, DistPathImproveContext, IntegerSortContext, PathCreateContext, PathImproveContext};
 use dist_graph::Points;
+use graph::Graph;
+use path::improvement::PathImprovement;
 use simple_websockets::Responder;
 use typed::{Action, Output};
 
 use crate::{
     integer_sort::SortedNumbers,
-    dist_path::{creation::PathCreation, improvement::PathImprovement},
+    dist_path::{creation::DistPathCreation, improvement::DistPathImprovement},
     typed::Input,
 };
 
@@ -27,6 +30,7 @@ mod error;
 mod graph;
 mod integer_sort;
 mod dist_path;
+mod path;
 mod typed;
 mod util;
 
@@ -93,7 +97,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
             };
             let path = method(ctx);
 
-            typed::send(client, PathCreation::done(path));
+            typed::send(client, DistPathCreation::done(path));
         }
         Action::ImproveDistPath {
             dimensions: dim,
@@ -114,7 +118,33 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
             };
             let improved_path = method(ctx);
 
-            typed::send(client, PathImprovement::from_path(improved_path).done());
+            typed::send(client, DistPathImprovement::from_path(improved_path).done());
+        },
+        Action::CreatePath { matrix, method } => {
+            let method = method.implementation();
+            let input_graph = Graph::from_values(matrix).expect("Invalid matrix");
+            let ctx = PathCreateContext {
+                graph: input_graph,
+                action: ActionContext {
+                    client: client.clone(),
+                    latency
+                }
+            };
+            let path = method(ctx);
+            typed::send(client, PathCreation::done(path));
+        },
+        Action::ImprovePath { path, matrix, method } => {
+            let method = method.implementation();
+            let input_graph = Graph::from_values(matrix).expect("invalid matrix");
+            let old_path = graph::Path::new(path);
+            let ctx = PathImproveContext {
+                graph: input_graph,
+                path: old_path,
+                action: ActionContext { client: client.clone(), latency },
+            };
+            let improved_path = method(ctx);
+
+            typed::send(client, PathImprovement::from_path(improved_path).done())
         }
     }
 }

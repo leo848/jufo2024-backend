@@ -1,22 +1,22 @@
 use serde::Serialize;
 
 use crate::{
-    dist_graph::{Edges, Path},
+    graph::{Edge, Path},
     Output,
 };
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct DistPathCreation {
+pub struct PathCreation {
     #[serde(skip_serializing_if = "Option::is_none")]
     done_path: Option<Path>,
-    current_edges: Edges,
+    current_edges: Vec<Edge>,
     #[serde(skip_serializing_if = "Option::is_none")]
     progress: Option<f32>,
 }
 
-impl DistPathCreation {
-    pub fn from_edges(edges: Edges) -> Self {
+impl PathCreation {
+    pub fn from_edges(edges: Vec<Edge>) -> Self {
         Self {
             current_edges: edges,
             done_path: None,
@@ -48,8 +48,8 @@ impl DistPathCreation {
     }
 }
 
-impl From<DistPathCreation> for Output {
-    fn from(value: DistPathCreation) -> Self {
-        Output::DistPathCreation(value)
+impl From<PathCreation> for Output {
+    fn from(value: PathCreation) -> Self {
+        Output::PathCreation(value)
     }
 }

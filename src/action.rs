@@ -3,7 +3,7 @@ use std::{thread, time::Duration};
 use simple_websockets::Responder;
 
 use crate::{
-    dist_graph, typed::{send, Norm}, Output
+    dist_graph, graph, typed::{send, Norm}, Output
 };
 
 #[derive(Clone)]
@@ -39,4 +39,17 @@ pub struct DistPathImproveContext {
     pub dim: u8,
     pub path: dist_graph::Path,
     pub norm: Norm,
+}
+
+#[derive(Clone)]
+pub struct PathCreateContext {
+    pub action: ActionContext,
+    pub graph: graph::Graph,
+}
+
+#[derive(Clone)]
+pub struct PathImproveContext {
+    pub action: ActionContext,
+    pub path: graph::Path,
+    pub graph: graph::Graph,
 }
