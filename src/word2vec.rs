@@ -30,7 +30,8 @@ impl Model {
         if !self.vocabulary.contains(string) {
             Err(Error::NotInVocabulary(string.to_owned()))
         } else {
-            Ok(WordVec { vec: self.model.get_vector(string).unwrap().clone() })
+            let vec = self.model.get_vector(string).unwrap().clone();
+            Ok(WordVec { vec })
         }
     }
 }
