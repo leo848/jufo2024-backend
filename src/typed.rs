@@ -150,6 +150,9 @@ pub enum Input {
         latency: u64,
     },
     Latency,
+    WordToVec {
+        word: String,
+    }
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -162,6 +165,16 @@ pub enum Highlight {
     Smaller,
     Larger,
     Pivot,
+}
+
+#[derive(Serialize, Debug, Clone)]
+#[serde(rename_all="camelCase")]
+pub enum WordToVecResult {
+    Ok {
+        word: String,
+        vec: Vec<f32>,
+    },
+    UnknownWord,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -186,6 +199,9 @@ pub enum Output {
     Latency {
         time_millis: u128,
     },
+    WordToVec {
+        result: WordToVecResult,
+    }
 }
 
 /// Polls the event hub for a new event.

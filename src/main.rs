@@ -4,7 +4,8 @@
 #![allow(clippy::cast_precision_loss)]
 #![allow(clippy::module_name_repetitions)]
 
-use crate::path::creation::PathCreation;
+use crate::typed::WordToVecResult;
+use crate::{path::creation::PathCreation, word2vec::Model};
 use std::{
     collections::HashMap,
     time::{SystemTime, UNIX_EPOCH},
@@ -33,10 +34,13 @@ mod dist_path;
 mod path;
 mod typed;
 mod util;
+mod word2vec;
 
 const PORT: u16 = 3141;
 
 fn main() {
+    let word_model = Model::from_file("nlp/model.bin").ok();
+
     let event_hub = simple_websockets::launch(PORT)
         .unwrap_or_else(|_| panic!("failed to listen on port {PORT}"));
     println!("Listening on port {PORT}");
@@ -58,6 +62,11 @@ fn main() {
                     .expect("Time went backwards")
                     .as_millis();
                 typed::send(&client, Output::Latency { time_millis });
+            },
+            Input::WordToVec { word } => {
+                if let Some(ref word_model) = word_model {
+                    word_to_vec(&word_model, word, client.clone());
+                }
             }
         }
     }
@@ -147,4 +156,19 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
             typed::send(client, PathImprovement::from_path(improved_path).done())
         }
     }
+}
+
+fn word_to_vec(word_model: &Model, word: String, client: Responder) {
+    let vec_for = word_model.vec_for(&word);
+    let result = match vec_for {
+        Ok(vec) => WordToVecResult::Ok { vec: vec.into_inner(), word },
+        Err(error) => match error {
+            word2vec::Error::NotInVocabulary(_) => WordToVecResult::UnknownWord,
+            word2vec::Error::Word2Vec(_) | word2vec::Error::Io(_) => panic!("{}", error),
+        }
+    };
+
+    typed::send(&client, Output::WordToVec {
+        result,
+    })
 }
