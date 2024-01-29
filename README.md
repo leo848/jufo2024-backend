@@ -12,6 +12,8 @@ cargo run
 
 Auf dem Port 3141 wird ein Webserver gestartet, der einkommende Requests über das Websocket-Protokoll beantwortet. Eine dazugehörige Frontend-Anwendung, [jufo2024-frontend](https://github.com/leo848/jufo2024-frontend), nutzt diesen Server zur Sortierung verschiedener Arten von Objekten.
 
+Für die Nutzung von Word2Vec muss zudem eine binäre Modelldatei heruntergeladen und im neu zu erstellenden Verzeichnis `jufo2024-backend/nlp` als `model.bin` gespeichert werden, ansonten wird bei jeder NLP-Anfrage nur `Unsupported` zurückgegeben. Beispielhafte solche Dateien finden sich unter [vectors.nlpl.eu](https://vectors.nlpl.eu/repository).
+
 ## Funktionen
 
 - Zahlen sortieren
