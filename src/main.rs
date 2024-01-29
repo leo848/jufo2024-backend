@@ -69,7 +69,7 @@ fn main() {
                 if let Some(ref word_model) = word_model {
                     word_to_vec(&word_model, word, client.clone());
                 } else {
-                    typed::send(&client, Output::WordToVec { result: WordToVecResult::Unsupported })
+                    typed::send(&client, Output::WordToVec { word, result: WordToVecResult::Unsupported })
                 }
             }
         }
