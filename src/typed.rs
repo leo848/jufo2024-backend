@@ -171,7 +171,6 @@ pub enum Highlight {
 #[serde(rename_all="camelCase")]
 pub enum WordToVecResult {
     Ok {
-        word: String,
         vec: Vec<f32>,
     },
     UnknownWord,
@@ -201,6 +200,7 @@ pub enum Output {
         time_millis: u128,
     },
     WordToVec {
+        word: String,
         result: WordToVecResult,
     }
 }

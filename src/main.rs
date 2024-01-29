@@ -165,7 +165,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
 fn word_to_vec(word_model: &Model, word: String, client: Responder) {
     let vec_for = word_model.vec_for(&word);
     let result = match vec_for {
-        Ok(vec) => WordToVecResult::Ok { vec: vec.into_inner(), word },
+        Ok(vec) => WordToVecResult::Ok { vec: vec.into_inner() },
         Err(error) => match error {
             word2vec::Error::NotInVocabulary(_) => WordToVecResult::UnknownWord,
             word2vec::Error::Word2Vec(_) | word2vec::Error::Io(_) => panic!("{}", error),
@@ -173,6 +173,7 @@ fn word_to_vec(word_model: &Model, word: String, client: Responder) {
     };
 
     typed::send(&client, Output::WordToVec {
+        word,
         result,
     })
 }
