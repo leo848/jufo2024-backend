@@ -175,6 +175,7 @@ pub enum WordToVecResult {
         vec: Vec<f32>,
     },
     UnknownWord,
+    Unsupported,
 }
 
 #[derive(Serialize, Debug, Clone)]
