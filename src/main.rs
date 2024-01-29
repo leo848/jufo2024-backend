@@ -39,7 +39,9 @@ mod word2vec;
 const PORT: u16 = 3141;
 
 fn main() {
-    let word_model = Model::from_file("nlp/model.bin").ok();
+    println!("Loading model. This may take some time...");
+    let word_model = Model::from_file("nlp/model-stripped.bin").ok();
+    println!("Model loaded successfully.");
 
     let event_hub = simple_websockets::launch(PORT)
         .unwrap_or_else(|_| panic!("failed to listen on port {PORT}"));
