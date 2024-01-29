@@ -168,7 +168,7 @@ pub enum Highlight {
 }
 
 #[derive(Serialize, Debug, Clone)]
-#[serde(rename_all="camelCase")]
+#[serde(tag = "type", rename_all="camelCase")]
 pub enum WordToVecResult {
     Ok {
         vec: Vec<f32>,
