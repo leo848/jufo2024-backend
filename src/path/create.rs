@@ -68,9 +68,11 @@ pub fn brute_force<C: CreateContext>(ctx: C) -> C::Path {
 pub fn greedy<C: CreateContext>(ctx: C) -> C::Path {
     let mut sorted_edge_iterator = ctx
         .node_indices()
-        .tuple_windows()
+        .cartesian_product(ctx.node_indices())
+        .filter(|(l,r)|l!=r)
         .sorted_by_key(|(l, r)| ctx.dist(*l, *r).usable());
 
+    // BiMap von Knoten
     let mut bimap = BiMap::with_capacity(ctx.len());
     let mut separate_list = Vec::<graph::Edge>::new();
 
@@ -78,6 +80,7 @@ pub fn greedy<C: CreateContext>(ctx: C) -> C::Path {
         let next_try = sorted_edge_iterator
             .next()
             .expect("there should be edges left");
+
 
         let insert = bimap.insert_no_overwrite(next_try.0, next_try.1);
         if insert.is_err() {
@@ -105,11 +108,11 @@ pub fn greedy<C: CreateContext>(ctx: C) -> C::Path {
     }
 
     let mut path: graph::Path = graph::Path::with_capacity(ctx.len());
-    let mut min = 0;
-    while let Some(&from) = bimap.get_by_right(&min) {
-        min = from;
+    let mut start = 0;
+    while let Some(&from) = bimap.get_by_right(&start) {
+        start = from;
     }
-    path.push(min);
+    path.push(start);
     while let Some(to) = bimap.get_by_left(&path[path.len() - 1]) {
         path.push(to.clone());
     }
