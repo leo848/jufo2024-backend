@@ -27,7 +27,10 @@ impl Path {
     }
 
     pub fn into_edges(self) -> Vec<Edge> {
-        self.iter().tuple_windows().map(|(l, r)| Edge::new(l, r)).collect()
+        self.iter()
+            .tuple_windows()
+            .map(|(l, r)| Edge::new(l, r))
+            .collect()
     }
 
     pub fn len(&self) -> usize {
@@ -81,5 +84,11 @@ impl<Output: ?Sized, Idx: SliceIndex<[usize], Output = Output>> Index<Idx> for P
     type Output = <Idx as SliceIndex<[usize]>>::Output;
     fn index(&self, index: Idx) -> &Self::Output {
         &self.0[index]
+    }
+}
+
+impl AsMut<Vec<usize>> for Path {
+    fn as_mut(&mut self) -> &mut Vec<usize> {
+        &mut self.0
     }
 }

@@ -1,9 +1,9 @@
-use crate::path::creation::PathCreation;
-use std::collections::HashSet;
 use core::ops::Not;
+use std::collections::HashSet;
+
 use itertools::Itertools;
 
-use crate::{action::PathCreateContext, graph::Path};
+use crate::{action::PathCreateContext, graph::Path, path::creation::PathCreation};
 
 pub fn transmute(ctx: PathCreateContext) -> Path {
     let PathCreateContext { action: _, graph } = ctx;
@@ -27,14 +27,16 @@ pub fn nearest_neighbor(ctx: PathCreateContext) -> Path {
         let last = path[path.len() - 1];
         visited.insert(last.clone());
 
-        let min = graph.node_indices()
+        let min = graph
+            .node_indices()
             .filter(|ni| Not::not(visited.contains(ni)))
             .min_by_key(|&ni| graph.weight(ni, last))
             .expect("point was empty even though path is not full");
 
         path.push(min.clone());
         action.send(
-            PathCreation::from_path(path.clone()).progress(path.len() as f32 / graph.node_indices().len() as f32),
+            PathCreation::from_path(path.clone())
+                .progress(path.len() as f32 / graph.node_indices().len() as f32),
         );
     }
 

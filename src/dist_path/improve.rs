@@ -1,70 +1,54 @@
-use crate::{
-    action::DistPathImproveContext,
-    dist_graph::{Edge, Path},
-    dist_path::improvement::DistPathImprovement,
-};
+use itertools::Itertools;
 
-pub fn rotate(ctx: DistPathImproveContext) -> Path {
-    let DistPathImproveContext {
-        action,
-        path: old_path,
-        dim,
-        norm,
-    } = ctx;
+use super::ImproveContext;
+use crate::graph;
 
-    for i in 0..old_path.len() {
-        let mut inner = old_path.clone().into_inner();
+pub fn rotate<C: ImproveContext>(ctx: C) -> C::Path {
+    let path = ctx.node_indices().collect_vec();
+
+    let mut min_cost = f32::INFINITY;
+    let mut min_i = 0;
+    for i in 0..path.len() {
+        let mut inner = path.clone();
         inner.rotate_left(i);
-        let rotated = Path::try_new(inner, dim).unwrap();
-        action.send(DistPathImprovement::from_path(rotated).better(false));
+        let cost = ctx.dist_path(&ctx.path_from_indices(inner)).into();
+        if cost < min_cost {
+            min_cost = cost;
+            min_i = i;
+            ctx.send_path(path.clone(), Some(i as f32 / path.len() as f32))
+        }
     }
 
-    let edges = old_path.clone().into_edges();
-    let (max_idx, max_edge) = edges
-        .into_iter()
-        .enumerate()
-        .max_by_key(|(_, edge)| edge.dist(norm))
-        .expect("should be nonempty");
-    if max_edge.dist(norm)
-        > Edge::new(old_path[0].clone(), old_path[old_path.len() - 1].clone()).dist(norm)
-    {
-        let mut new_path = old_path.into_inner();
-        let len = new_path.len();
-        // So rotieren, dass min_idx auf -1 liegt.
-        let left = (max_idx + 1) % len;
-        new_path.rotate_left(left);
-        Path::try_new(new_path, dim).unwrap()
+    if min_cost < ctx.dist_path(&ctx.path_from_indices(path.clone())).into() {
+        let mut inner = path.clone();
+        inner.rotate_left(min_i);
+        ctx.path_from_indices(inner)
     } else {
-        old_path
+        ctx.path_from_indices(path)
     }
 }
 
-pub fn two_opt(ctx: DistPathImproveContext) -> Path {
-    fn two_opt_swap(path: &mut Path, v1: usize, v2: usize) {
+pub fn two_opt<C: ImproveContext>(ctx: C) -> C::Path {
+    fn two_opt_swap(path: &mut graph::Path, v1: usize, v2: usize) {
         let path = path.as_mut();
         path[v1 + 1..v2].reverse();
     }
 
-    let DistPathImproveContext {
-        action,
-        mut path,
-        dim: _,
-        norm,
-    } = ctx;
-
     let mut improvement = true;
-    let mut best_cost = path.cost(norm);
+    let mut path = graph::Path::new(ctx.node_indices().collect());
+    let mut best_cost = ctx.cost(&path);
 
     'improvin: while improvement {
         improvement = false;
         for i in 0..path.len() - 1 {
             for j in i + 1..path.len() {
                 two_opt_swap(&mut path, i, j);
-                let new_cost = path.cost(norm);
+                let new_cost = ctx.cost(&path);
                 if new_cost < best_cost {
-                    action.send(DistPathImprovement::from_path(path.clone()).progress(
-                        (i * path.len() + j) as f32 / ((path.len()) * path.len()) as f32,
-                    ));
+                    ctx.send_path(
+                        path.iter(),
+                        Some((i * path.len() + j) as f32 / ((path.len()) * path.len()) as f32),
+                    );
                 }
                 if new_cost < best_cost {
                     improvement = true;
@@ -76,11 +60,11 @@ pub fn two_opt(ctx: DistPathImproveContext) -> Path {
         }
     }
 
-    path
+    ctx.path_from_indices(path.iter())
 }
 
-pub fn three_opt(ctx: DistPathImproveContext) -> Path {
-    fn three_opt_swap(path: Path, method: u8, a: usize, b: usize, c: usize) -> Path {
+pub fn three_opt<C: ImproveContext>(ctx: C) -> C::Path {
+    fn three_opt_swap(path: graph::Path, method: u8, a: usize, b: usize, c: usize) -> graph::Path {
         let [a, c, e] = [a, b, c];
         let [b, d, f] = [a + 1, b + 1, c + 1];
         match method {
@@ -97,15 +81,11 @@ pub fn three_opt(ctx: DistPathImproveContext) -> Path {
         }
     }
 
-    let DistPathImproveContext {
-        action,
-        dim: _,
-        mut path,
-        norm,
-    } = ctx;
+    let mut path = ctx.start_path();
 
     let mut improvement = true;
-    let mut best_cost = path.cost(norm);
+    let mut best_cost = ctx.cost(&path);
+    let mut best_path = path.clone();
 
     'improvin: while improvement {
         improvement = false;
@@ -115,20 +95,20 @@ pub fn three_opt(ctx: DistPathImproveContext) -> Path {
                 for k in j + 2..path.len() {
                     for method in 0..=3 {
                         path = three_opt_swap(path, method, i, j, k);
-                        let new_cost = path.cost(norm);
+                        let new_cost = ctx.cost(&path);
                         if new_cost < best_cost || (k == j + 2 && j == i + 2) {
-                            action.send(
-                                DistPathImprovement::from_path(path.clone())
-                                    .progress(
-                                        (i * path.len() + j) as f32
-                                            / ((path.len()) * path.len()) as f32,
-                                    )
-                                    .better(new_cost < best_cost),
+                            ctx.send_path(
+                                best_path.iter(),
+                                Some(
+                                    (i * path.len() + j) as f32
+                                        / ((path.len()) * path.len()) as f32,
+                                ),
                             );
                         }
                         if new_cost < best_cost {
                             improvement = true;
                             best_cost = new_cost;
+                            best_path = path.clone();
                             continue 'improvin;
                         } else {
                             save_path.clone_into(&mut path);
@@ -139,30 +119,25 @@ pub fn three_opt(ctx: DistPathImproveContext) -> Path {
         }
     }
 
-    path
+    ctx.path_from_indices(path.iter())
 }
 
-pub fn swap(ctx: DistPathImproveContext) -> Path {
-    let DistPathImproveContext {
-        action,
-        mut path,
-        dim: _,
-        norm,
-    } = ctx;
-
+pub fn swap<C: ImproveContext>(ctx: C) -> C::Path {
     let mut improvement = true;
-    let mut best_cost = path.cost(norm);
+    let mut path = ctx.start_path();
+    let mut best_cost = ctx.cost(&path);
 
     'improvin: while improvement {
         improvement = false;
         for i in 0..path.len() {
             for j in i + 1..path.len() {
                 path.as_mut().swap(i, j);
-                let new_cost = path.cost(norm);
+                let new_cost = ctx.cost(&path);
                 if new_cost < best_cost {
-                    action.send(DistPathImprovement::from_path(path.clone()).progress(
-                        (i * path.len() + j) as f32 / ((path.len()) * path.len()) as f32,
-                    ));
+                    ctx.send_path(
+                        path.iter(),
+                        Some((i * path.len() + j) as f32 / ((path.len()) * path.len()) as f32),
+                    );
                     best_cost = new_cost;
                     improvement = true;
                     continue 'improvin;
@@ -173,38 +148,33 @@ pub fn swap(ctx: DistPathImproveContext) -> Path {
         }
     }
 
-    path
+    ctx.path_from_indices(path.iter())
 }
 
-pub fn simulated_annealing(ctx: DistPathImproveContext) -> Path {
-    let DistPathImproveContext {
-        action,
-        mut path,
-        dim: _,
-        norm,
-    } = ctx;
+pub fn simulated_annealing<C: ImproveContext>(ctx: C) -> C::Path {
+    let mut path = ctx.start_path();
 
     let initial_temp: f64 = 0.15;
     let k: f64 = 0.00000000025;
     let mut temperature = initial_temp;
     let mut i = 0;
-    let mut cost = path.cost(norm);
+    let mut cost = ctx.cost(&path);
     let mut path_approx = path.clone();
     let mut path_approx_cost = cost;
 
     while temperature > 0.000000005 {
         if i % (1 << 24) == 0 {
-            action.send(
-                DistPathImprovement::from_path(path_approx.clone())
-                    .progress(1.0 - (temperature / initial_temp) as f32),
+            ctx.send_path(
+                path_approx.iter(),
+                Some(1.0 - (temperature / initial_temp) as f32),
             );
         }
         let index1 = fastrand::usize(..path.len());
         let index2 = fastrand::usize(..path.len());
 
         path.swap(index1, index2);
-        let new_cost = path.cost(norm);
-        let cost_delta = new_cost.into_inner() - cost.into_inner();
+        let new_cost = ctx.cost(&path);
+        let cost_delta = new_cost - cost;
         // let cost_delta = path.cost_delta_under_swap(index1, index2, norm);
         if cost_delta < 0.0 || fastrand::f32() < f32::exp(-((cost_delta) / temperature as f32)) {
             // path.swap(index1, index2);
@@ -221,5 +191,5 @@ pub fn simulated_annealing(ctx: DistPathImproveContext) -> Path {
         i += 1;
     }
 
-    path_approx
+    ctx.path_from_indices(path_approx.iter())
 }

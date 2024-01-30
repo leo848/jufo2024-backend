@@ -42,3 +42,9 @@ impl Sum<f32> for Cost {
         Self::new(iter.sum())
     }
 }
+
+impl From<Cost> for f32 {
+    fn from(value: Cost) -> Self {
+        value.into_inner()
+    }
+}

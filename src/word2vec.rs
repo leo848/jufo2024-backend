@@ -1,7 +1,7 @@
 use std::{collections::HashSet, io, path::Path};
-use word2vec::wordvectors::WordVector;
 
 use thiserror::Error;
+use word2vec::wordvectors::WordVector;
 
 pub struct Model {
     model: WordVector,
@@ -17,12 +17,13 @@ impl Model {
         // let dataset = &model.datasets()?[0];
 
         // let reader = dataset.as_reader().obj;
-        
+
         let model = WordVector::load_from_binary(&model_file.as_ref().to_string_lossy())?;
         let vocab = model.get_words().collect();
 
         Ok(Self {
-            model, vocabulary: vocab
+            model,
+            vocabulary: vocab,
         })
     }
 
@@ -43,7 +44,7 @@ pub enum Error {
     #[error("io error: {0}")]
     Io(#[from] io::Error),
     #[error("hdf error: {0}")]
-    Word2Vec(#[from] word2vec::errors::Word2VecError)
+    Word2Vec(#[from] word2vec::errors::Word2VecError),
 }
 
 #[derive(Debug, Clone)]

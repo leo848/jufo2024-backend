@@ -3,7 +3,9 @@ use std::{thread, time::Duration};
 use simple_websockets::Responder;
 
 use crate::{
-    dist_graph, graph, typed::{send, Norm}, Output
+    dist_graph, graph,
+    typed::{send, Norm},
+    Output,
 };
 
 #[derive(Clone)]

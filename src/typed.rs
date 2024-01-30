@@ -1,13 +1,18 @@
-use crate::action::PathImproveContext;
-use crate::path::improvement::PathImprovement;
-use crate::path::creation::PathCreation;
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 use simple_websockets::{Event, EventHub, Message, Responder};
 
 use crate::{
-    action::{DistPathCreateContext, DistPathImproveContext, IntegerSortContext, PathCreateContext}, autorestart, dist_graph, dist_path::{self, creation::DistPathCreation, improvement::DistPathImprovement}, path, error::Error, graph, integer_sort
+    action::{
+        DistPathCreateContext, DistPathImproveContext, IntegerSortContext, PathCreateContext,
+        PathImproveContext,
+    },
+    autorestart, dist_graph,
+    dist_path::{self, creation::DistPathCreation, improvement::DistPathImprovement},
+    error::Error,
+    graph, integer_sort, path,
+    path::{creation::PathCreation, improvement::PathImprovement},
 };
 
 #[derive(Deserialize, Debug, Clone, Copy)]
@@ -40,7 +45,6 @@ pub enum PathCreateMethod {
     NearestNeighbor,
     BruteForce,
     Greedy,
-    Christofides,
 }
 
 impl PathCreateMethod {
@@ -52,7 +56,6 @@ impl PathCreateMethod {
             Self::NearestNeighbor => dist_path::create::nearest_neighbor,
             Self::BruteForce => dist_path::create::brute_force,
             Self::Greedy => dist_path::create::greedy,
-            Self::Christofides => dist_path::create::christofides,
         }
     }
 
@@ -62,7 +65,8 @@ impl PathCreateMethod {
             Self::Transmute => path::create::transmute,
             Self::Random => path::create::random,
             Self::NearestNeighbor => path::create::nearest_neighbor,
-            _ => todo!(),
+            Self::BruteForce => dist_path::create::brute_force,
+            Self::Greedy => dist_path::create::greedy,
         }
     }
 }
@@ -92,7 +96,11 @@ impl PathImproveMethod {
     #[inline]
     pub fn implementation(self) -> fn(PathImproveContext) -> graph::Path {
         match self {
-            _ => todo!(),
+            Self::Rotate => dist_path::improve::rotate,
+            Self::TwoOpt => dist_path::improve::two_opt,
+            Self::ThreeOpt => dist_path::improve::three_opt,
+            Self::Swap => dist_path::improve::swap,
+            Self::SimulatedAnnealing => dist_path::improve::simulated_annealing,
         }
     }
 }
@@ -135,7 +143,7 @@ pub enum Action {
         path: Vec<usize>,
         matrix: Vec<Vec<f32>>,
         method: PathImproveMethod,
-    }
+    },
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -152,7 +160,7 @@ pub enum Input {
     Latency,
     WordToVec {
         word: String,
-    }
+    },
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -168,11 +176,9 @@ pub enum Highlight {
 }
 
 #[derive(Serialize, Debug, Clone)]
-#[serde(tag = "type", rename_all="camelCase")]
+#[serde(tag = "type", rename_all = "camelCase")]
 pub enum WordToVecResult {
-    Ok {
-        vec: Vec<f32>,
-    },
+    Ok { vec: Vec<f32> },
     UnknownWord,
     Unsupported,
 }
@@ -202,7 +208,7 @@ pub enum Output {
     WordToVec {
         word: String,
         result: WordToVecResult,
-    }
+    },
 }
 
 /// Polls the event hub for a new event.

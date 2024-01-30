@@ -4,201 +4,174 @@ use std::collections::HashSet;
 use bimap::BiMap;
 use itertools::Itertools;
 
-use crate::{
-    action::DistPathCreateContext,
-    dist_graph::{Cost, Edge, Edges, Path, Points},
-    dist_path::creation::DistPathCreation,
-    util::factorial,
-};
+use super::CreateContext;
+use crate::{graph, util::factorial};
 
-pub fn transmute(ctx: DistPathCreateContext) -> Path {
-    let values = ctx.points;
-    values.into_path()
+pub fn transmute<C: CreateContext>(ctx: C) -> C::Path {
+    ctx.path_from_indices(ctx.node_indices())
 }
 
-pub fn random(ctx: DistPathCreateContext) -> Path {
-    let values = ctx.points;
-    let mut path = values.into_path();
-    fastrand::shuffle(path.as_mut());
-    path
+pub fn random<C: CreateContext>(ctx: C) -> C::Path {
+    let mut path = ctx.node_indices().collect_vec();
+    fastrand::shuffle(&mut path);
+    ctx.path_from_indices(path)
 }
 
-pub fn nearest_neighbor(ctx: DistPathCreateContext) -> Path {
-    let DistPathCreateContext {
-        action,
-        dim,
-        points: values,
-        norm,
-    } = ctx;
-
+pub fn nearest_neighbor<C: CreateContext>(ctx: C) -> C::Path {
     let mut visited = HashSet::new();
-    let mut path = Path::try_new(vec![values[0].clone()], dim).expect("Provided valid value");
-    while path.len() != values.len() {
-        let last = &path[path.len() - 1];
+    let mut path = graph::Path::new(vec![0]);
+    while path.len() != ctx.len() {
+        let last = path[path.len() - 1];
         visited.insert(last.clone());
 
-        let min = values
-            .iter()
-            .filter(|&point| Not::not(visited.contains(point)))
-            .min_by_key(|point| point.comparable_dist(last, norm))
+        let min = ctx
+            .node_indices()
+            .filter(|&ni| Not::not(visited.contains(&ni)))
+            .min_by_key(|&ni| ctx.dist(last, ni))
             .expect("point was empty even though path is not full");
 
         path.push(min.clone());
-        action.send(
-            DistPathCreation::from_path(path.clone()).progress(path.len() as f32 / values.len() as f32),
-        );
+        ctx.send_path(path.iter(), Some(path.len() as f32 / ctx.len() as f32));
     }
 
-    path
+    ctx.path_from_indices(path.iter())
 }
 
-pub fn brute_force(ctx: DistPathCreateContext) -> Path {
-    let DistPathCreateContext {
-        action,
-        points: values,
-        norm,
-        dim: _,
-    } = ctx;
+pub fn brute_force<C: CreateContext>(ctx: C) -> C::Path {
+    let mut min = f32::INFINITY;
 
-    let mut min = Cost::new(f32::INFINITY);
-
-    let permutation_count = factorial(values.len());
-    let mut min_permutation = values.clone();
+    let permutation_count = factorial(ctx.len());
+    let mut min_permutation = ctx.node_indices().collect_vec();
 
     let send_every = permutation_count.next_power_of_two() >> 5;
 
-    for (i, permutation) in values.permutations().enumerate() {
-        let path = permutation.clone().into_path();
-        let cost = path.cost(norm);
+    for (i, permutation) in ctx.node_indices().permutations(ctx.len()).enumerate() {
+        let cost = ctx
+            .dist_path(&ctx.path_from_indices(permutation.iter().copied()))
+            .into();
         if cost < min {
             min = cost;
             min_permutation = permutation;
         }
         if ((i & (send_every - 1)) == 0) || cost < min {
-            action.send(
-                DistPathCreation::from_path(min_permutation.clone().into_path())
-                    .progress(i as f32 / permutation_count as f32),
+            ctx.send_path(
+                min_permutation.clone(),
+                Some(i as f32 / permutation_count as f32),
             );
         }
     }
 
-    min_permutation.into_path()
+    ctx.path_from_indices(min_permutation)
 }
 
-pub fn greedy(ctx: DistPathCreateContext) -> Path {
-    let DistPathCreateContext {
-        action,
-        points: values,
-        dim: _,
-        norm,
-    } = ctx;
+pub fn greedy<C: CreateContext>(ctx: C) -> C::Path {
+    let mut sorted_edge_iterator = ctx
+        .node_indices()
+        .tuple_windows()
+        .sorted_by_key(|(l, r)| ctx.dist(*l, *r));
 
-    let mut sorted_edge_iterator = values
-        .edges_iter()
-        .sorted_by_key(|e| e.comparable_dist(norm));
+    let mut bimap = BiMap::with_capacity(ctx.len());
+    let mut separate_list = Vec::<graph::Edge>::new();
 
-    let mut bimap = BiMap::with_capacity(values.len());
-    let mut separate_list = Edges::new();
-
-    'outer: while bimap.len() < values.len() - 1 {
+    'outer: while bimap.len() < ctx.len() - 1 {
         let next_try = sorted_edge_iterator
             .next()
             .expect("there should be edges left");
 
-        let insert = bimap.insert_no_overwrite(next_try.from().clone(), next_try.to().clone());
+        let insert = bimap.insert_no_overwrite(next_try.0, next_try.1);
         if insert.is_err() {
             continue;
         } else {
-            separate_list.push(Edge::new(next_try.from().clone(), next_try.to().clone()));
+            separate_list.push(graph::Edge::new(next_try.0, next_try.1));
         }
 
         // Ist next_try.0 Teil eines Zyklus? Falls ja, vorab abbrechen.
-        let mut element = next_try.from();
-        while let Some(next) = bimap.get_by_left(element) {
-            if next == next_try.from() {
+        let mut element = next_try.0;
+        while let Some(&next) = bimap.get_by_left(&element) {
+            if next == next_try.0 {
                 // Einfügen rückgängig machen
-                bimap.remove_by_left(next_try.from());
+                bimap.remove_by_left(&next_try.0);
                 separate_list.pop();
                 continue 'outer;
             }
             element = next;
         }
 
-        action.send(
-            DistPathCreation::from_edges(separate_list.clone())
-                .progress(bimap.len() as f32 / values.len() as f32),
+        ctx.send_edges(
+            separate_list.iter().map(|&edge| (edge.0, edge.1)),
+            Some(bimap.len() as f32 / ctx.len() as f32),
         );
     }
 
-    let mut path: Path = Path::with_capacity(values.len());
-    let mut min = &values[0];
-    while let Some(from) = bimap.get_by_right(min) {
+    let mut path: graph::Path = graph::Path::with_capacity(ctx.len());
+    let mut min = 0;
+    while let Some(&from) = bimap.get_by_right(&min) {
         min = from;
     }
-    path.push(min.clone());
+    path.push(min);
     while let Some(to) = bimap.get_by_left(&path[path.len() - 1]) {
         path.push(to.clone());
     }
 
-    assert_eq!(values.len(), path.len());
+    assert_eq!(ctx.len(), path.len());
 
-    path
+    ctx.path_from_indices(path.iter())
 }
 
-pub fn christofides(ctx: DistPathCreateContext) -> Path {
-    let DistPathCreateContext {
-        action,
-        points: values,
-        dim: _,
-        norm,
-    } = ctx;
+// pub fn christofides(ctx: DistPathCreateContext) -> Path {
+//     let DistPathCreateContext {
+//         action,
+//         points: values,
+//         dim: _,
+//         norm,
+//     } = ctx;
 
-    // 1. Finde den MST (minimalen Baum, der alle Knoten verbindet)
-    let mut visited = HashSet::new();
-    let mut edges = Edges::new();
+//     // 1. Finde den MST (minimalen Baum, der alle Knoten verbindet)
+//     let mut visited = HashSet::new();
+//     let mut edges = Edges::new();
 
-    let first_vertex = values[0].clone();
-    visited.insert(first_vertex);
+//     let first_vertex = values[0].clone();
+//     visited.insert(first_vertex);
 
-    while visited.len() < values.len() {
-        let min_edge = values
-            .edges_iter()
-            .filter(|edge| {
-                visited.contains(edge.from()) != visited.contains(edge.to()) // einer von beiden
-            })
-            .min_by_key(|e| e.comparable_dist(norm))
-            .expect("no edges");
+//     while visited.len() < values.len() {
+//         let min_edge = values
+//             .edges_iter()
+//             .filter(|edge| {
+//                 visited.contains(edge.from()) != visited.contains(edge.to()) // einer von beiden
+//             })
+//             .min_by_key(|e| e.comparable_dist(norm))
+//             .expect("no edges");
 
-        visited.insert(min_edge.from().clone());
-        visited.insert(min_edge.to().clone());
-        edges.push(min_edge);
+//         visited.insert(min_edge.from().clone());
+//         visited.insert(min_edge.to().clone());
+//         edges.push(min_edge);
 
-        action.send(DistPathCreation::from_edges(edges.clone()))
-    }
+//         action.send(DistPathCreation::from_edges(edges.clone()))
+//     }
 
-    let mst = edges;
+//     let mst = edges;
 
-    // // 2. Finde eine perfekte Paarung im Teilgraph aller Kanten ungeraden Grades
+//     // // 2. Finde eine perfekte Paarung im Teilgraph aller Kanten ungeraden Grades
 
-    let odd_degree_vertices: Points = visited
-        .clone()
-        .into_iter()
-        .map(|point| {
-            (
-                point.clone(),
-                mst.clone()
-                    .into_iter()
-                    .filter(|contained_edge| {
-                        contained_edge.from() == &point || contained_edge.to() == &point
-                    })
-                    .count(),
-            )
-        })
-        .filter(|(_, degree)| degree % 2 == 1)
-        .map(|(point, _)| point)
-        .collect();
+//     let odd_degree_vertices: Points = visited
+//         .clone()
+//         .into_iter()
+//         .map(|point| {
+//             (
+//                 point.clone(),
+//                 mst.clone()
+//                     .into_iter()
+//                     .filter(|contained_edge| {
+//                         contained_edge.from() == &point || contained_edge.to() == &point
+//                     })
+//                     .count(),
+//             )
+//         })
+//         .filter(|(_, degree)| degree % 2 == 1)
+//         .map(|(point, _)| point)
+//         .collect();
 
-    let _odd_degree_edges = odd_degree_vertices.edges_iter().collect::<HashSet<_>>();
+//     let _odd_degree_edges = odd_degree_vertices.edges_iter().collect::<HashSet<_>>();
 
-    todo!()
-}
+//     todo!()
+// }

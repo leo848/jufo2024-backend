@@ -1,18 +1,19 @@
 use core::ops::Range;
+
+pub use edge::Edge;
 use itertools::Itertools;
 pub use matrix::Matrix;
 pub use path::Path;
 pub use weight::Weight;
-pub use edge::Edge;
 
 use crate::{
     dist_graph::{Point, Points, Scalar},
     typed::Norm,
 };
 
+mod edge;
 mod matrix;
 mod path;
-mod edge;
 mod weight;
 
 #[derive(Debug, Clone)]

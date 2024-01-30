@@ -39,3 +39,9 @@ impl Sum<f32> for Weight {
         Self::new(iter.sum())
     }
 }
+
+impl From<Weight> for f32 {
+    fn from(value: Weight) -> Self {
+        value.into_inner()
+    }
+}
