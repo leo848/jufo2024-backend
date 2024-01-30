@@ -1,7 +1,8 @@
+use crate::dist_graph::Edge;
 use serde::Serialize;
 
 use crate::{
-    dist_graph::{Edges, Path},
+    dist_graph::Path,
     Output,
 };
 
@@ -10,13 +11,13 @@ use crate::{
 pub struct DistPathCreation {
     #[serde(skip_serializing_if = "Option::is_none")]
     done_path: Option<Path>,
-    current_edges: Edges,
+    current_edges: Vec<Edge>,
     #[serde(skip_serializing_if = "Option::is_none")]
     progress: Option<f32>,
 }
 
 impl DistPathCreation {
-    pub fn from_edges(edges: Edges) -> Self {
+    pub fn from_edges(edges: Vec<Edge>) -> Self {
         Self {
             current_edges: edges,
             done_path: None,

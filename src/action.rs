@@ -31,7 +31,7 @@ pub struct IntegerSortContext {
 pub struct DistPathCreateContext {
     pub action: ActionContext,
     pub dim: u8,
-    pub points: dist_graph::Points,
+    pub points: Vec<dist_graph::Point>,
     pub norm: Norm,
 }
 

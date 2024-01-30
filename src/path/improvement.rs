@@ -22,11 +22,6 @@ impl PathImprovement {
         }
     }
 
-    #[allow(dead_code)]
-    pub fn better(self, better: bool) -> Self {
-        Self { better, ..self }
-    }
-
     pub fn done(self) -> Self {
         Self {
             progress: Some(1.0),
@@ -35,7 +30,6 @@ impl PathImprovement {
         }
     }
 
-    #[allow(dead_code)]
     pub fn progress(self, value: f32) -> Self {
         Self {
             progress: Some(value),

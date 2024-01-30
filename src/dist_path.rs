@@ -6,7 +6,7 @@ use crate::{
     action::{DistPathCreateContext, DistPathImproveContext, PathCreateContext},
     dist_graph::{self, Cost},
     graph::{self, Weight},
-    path::creation::PathCreation,
+    path::{creation::PathCreation, improvement::PathImprovement},
     DistPathCreation, DistPathImprovement, PathImproveContext,
 };
 
@@ -191,7 +191,7 @@ impl ImproveContext for PathImproveContext {
     }
 
     fn send_path(&self, path: impl IntoIterator<Item = usize>, progress: Option<f32>) {
-        let mut pc = PathCreation::from_path(graph::Path::new(path.into_iter().collect_vec()));
+        let mut pc = PathImprovement::from_path(graph::Path::new(path.into_iter().collect_vec()));
         if let Some(p) = progress {
             pc = pc.progress(p);
         }

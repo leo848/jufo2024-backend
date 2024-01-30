@@ -7,7 +7,7 @@ pub use path::Path;
 pub use weight::Weight;
 
 use crate::{
-    dist_graph::{Point, Points, Scalar},
+    dist_graph::{Point, Scalar},
     typed::Norm,
 };
 
@@ -30,8 +30,7 @@ impl Graph {
         Matrix::new(values).map(Self::from_matrix)
     }
 
-    #[allow(dead_code)]
-    pub fn from_points(points: Points, norm: Norm) -> Self {
+    pub fn from_points(points: Vec<Point>, norm: Norm) -> Self {
         let costs = points
             .iter()
             .map(|point1| {

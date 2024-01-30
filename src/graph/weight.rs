@@ -14,7 +14,6 @@ impl Weight {
         Self(HashScalar::new(value))
     }
 
-    #[allow(dead_code)]
     pub fn into_inner(self) -> Scalar {
         self.0.into_inner()
     }

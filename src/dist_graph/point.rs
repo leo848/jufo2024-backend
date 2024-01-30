@@ -1,11 +1,9 @@
-use core::{hash::Hash, ops::Index};
-use std::{ops::Not, slice::SliceIndex};
+use core::hash::Hash;
 
-use itertools::Itertools;
 use serde::Serialize;
 
 use crate::{
-    dist_graph::{Cost, Edge, Path, Scalar},
+    dist_graph::{Cost, Scalar},
     typed::Norm,
 };
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -60,16 +58,6 @@ impl Point {
                 .unwrap_or(0.0),
         )
     }
-
-    #[inline]
-    pub fn comparable_dist(&self, other: &Point, norm: Norm) -> Cost {
-        match norm {
-            Norm::Manhattan => self.manhattan_dist(other),
-            Norm::Euclidean => self.euclidean_dist_squared(other),
-            Norm::Max => self.max_dist(other),
-        }
-    }
-
     #[inline]
     pub fn dist(&self, other: &Point, norm: Norm) -> Cost {
         match norm {
@@ -81,56 +69,3 @@ impl Point {
 }
 
 impl Eq for Point {}
-
-#[derive(Debug, Clone, PartialEq, Serialize)]
-pub struct Points(Vec<Point>);
-
-impl Points {
-    pub fn try_new(points: Vec<Point>, dim: u8) -> Option<Self> {
-        (points.is_empty().not() && points.iter().all(|s| s.dim() == dim as usize))
-            .then_some(Points(points))
-    }
-
-    pub fn try_new_raw(values: Vec<Vec<Scalar>>, dim: u8) -> Option<Self> {
-        Self::try_new(values.into_iter().map(Point::new).collect(), dim)
-    }
-
-    pub fn permutations(self) -> impl Iterator<Item = Points> {
-        let len = self.len();
-        self.0.into_iter().permutations(len).map(Points)
-    }
-
-    pub fn into_path(self) -> Path {
-        let dim = self[0].dim().try_into().expect("dimension too high");
-        Path::try_new(self.0, dim).expect("Already validated")
-    }
-
-    pub fn edges_iter(&self) -> impl Iterator<Item = Edge> + '_ {
-        self.0
-            .iter()
-            .cartesian_product(&self.0)
-            .filter(|(t, u)| t != u)
-            .map(|(p1, p2)| Edge::new(p1.clone(), p2.clone()))
-    }
-
-    pub fn len(&self) -> usize {
-        self.0.len()
-    }
-
-    pub fn iter(&self) -> impl Iterator<Item = &'_ Point> + '_ {
-        self.0.iter()
-    }
-}
-
-impl<Idx: SliceIndex<[Point], Output = Point>> Index<Idx> for Points {
-    type Output = Point;
-    fn index(&self, index: Idx) -> &Self::Output {
-        &self.0[index]
-    }
-}
-
-impl FromIterator<Point> for Points {
-    fn from_iter<T: IntoIterator<Item = Point>>(iter: T) -> Self {
-        Points(iter.into_iter().collect())
-    }
-}

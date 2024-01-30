@@ -13,7 +13,6 @@ use action::{
     ActionContext, DistPathCreateContext, DistPathImproveContext, IntegerSortContext,
     PathCreateContext, PathImproveContext,
 };
-use dist_graph::Points;
 use graph::Graph;
 use path::improvement::PathImprovement;
 use simple_websockets::Responder;
@@ -107,7 +106,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
             norm,
         } => {
             let method = method.dist_implementation();
-            let points = Points::try_new_raw(values, dim).expect("should send valid data");
+            let points = values.into_iter().map(|v| dist_graph::Point::new(v)).collect();
             let ctx = DistPathCreateContext {
                 action: ActionContext {
                     client: client.clone(),

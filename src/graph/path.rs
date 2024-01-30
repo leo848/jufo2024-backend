@@ -12,7 +12,6 @@ use super::Edge;
 #[derive(Constructor, Debug, Clone, Serialize)]
 pub struct Path(Vec<usize>);
 
-#[allow(dead_code)]
 impl Path {
     pub fn iter(&self) -> impl Iterator<Item = usize> + '_ {
         self.0.iter().copied()
@@ -20,10 +19,6 @@ impl Path {
 
     pub fn with_capacity(cap: usize) -> Self {
         Self(Vec::with_capacity(cap))
-    }
-
-    pub fn into_inner(self) -> Vec<usize> {
-        self.0
     }
 
     pub fn into_edges(self) -> Vec<Edge> {
@@ -56,10 +51,6 @@ impl Path {
 
     pub fn swap(&mut self, i: usize, j: usize) {
         self.0.swap(i, j);
-    }
-
-    pub fn get(&self, index: usize) -> Option<usize> {
-        self.0.get(index).map(|&i| i)
     }
 }
 
