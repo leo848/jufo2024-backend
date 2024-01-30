@@ -9,7 +9,7 @@ use crate::{
         PathImproveContext,
     },
     autorestart, dist_graph,
-    dist_path::{self, creation::DistPathCreation, improvement::DistPathImprovement},
+    dist_path::{creation::DistPathCreation, improvement::DistPathImprovement},
     error::Error,
     graph, integer_sort, path,
     path::{creation::PathCreation, improvement::PathImprovement},
@@ -51,11 +51,11 @@ impl PathCreateMethod {
     #[inline]
     pub fn dist_implementation(self) -> fn(DistPathCreateContext) -> dist_graph::Path {
         match self {
-            Self::Transmute => dist_path::create::transmute,
-            Self::Random => dist_path::create::random,
-            Self::NearestNeighbor => dist_path::create::nearest_neighbor,
-            Self::BruteForce => dist_path::create::brute_force,
-            Self::Greedy => dist_path::create::greedy,
+            Self::Transmute => path::create::transmute,
+            Self::Random => path::create::random,
+            Self::NearestNeighbor => path::create::nearest_neighbor,
+            Self::BruteForce => path::create::brute_force,
+            Self::Greedy => path::create::greedy,
         }
     }
 
@@ -65,8 +65,8 @@ impl PathCreateMethod {
             Self::Transmute => path::create::transmute,
             Self::Random => path::create::random,
             Self::NearestNeighbor => path::create::nearest_neighbor,
-            Self::BruteForce => dist_path::create::brute_force,
-            Self::Greedy => dist_path::create::greedy,
+            Self::BruteForce => path::create::brute_force,
+            Self::Greedy => path::create::greedy,
         }
     }
 }
@@ -85,22 +85,22 @@ impl PathImproveMethod {
     #[inline]
     pub fn dist_implementation(self) -> fn(DistPathImproveContext) -> dist_graph::Path {
         match self {
-            Self::Rotate => dist_path::improve::rotate,
-            Self::TwoOpt => dist_path::improve::two_opt,
-            Self::ThreeOpt => dist_path::improve::three_opt,
-            Self::Swap => dist_path::improve::swap,
-            Self::SimulatedAnnealing => dist_path::improve::simulated_annealing,
+            Self::Rotate => path::improve::rotate,
+            Self::TwoOpt => path::improve::two_opt,
+            Self::ThreeOpt => path::improve::three_opt,
+            Self::Swap => path::improve::swap,
+            Self::SimulatedAnnealing => path::improve::simulated_annealing,
         }
     }
 
     #[inline]
     pub fn implementation(self) -> fn(PathImproveContext) -> graph::Path {
         match self {
-            Self::Rotate => dist_path::improve::rotate,
-            Self::TwoOpt => dist_path::improve::two_opt,
-            Self::ThreeOpt => dist_path::improve::three_opt,
-            Self::Swap => dist_path::improve::swap,
-            Self::SimulatedAnnealing => dist_path::improve::simulated_annealing,
+            Self::Rotate => path::improve::rotate,
+            Self::TwoOpt => path::improve::two_opt,
+            Self::ThreeOpt => path::improve::three_opt,
+            Self::Swap => path::improve::swap,
+            Self::SimulatedAnnealing => path::improve::simulated_annealing,
         }
     }
 }

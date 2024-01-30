@@ -1,5 +1,3 @@
-use core::ops::Range;
-
 pub use edge::Edge;
 use itertools::Itertools;
 pub use matrix::Matrix;
@@ -56,9 +54,5 @@ impl Graph {
             .tuple_windows()
             .map(|(ni1, ni2)| self.weight(ni1, ni2))
             .sum()
-    }
-
-    pub fn node_indices(&self) -> Range<usize> {
-        0..self.size()
     }
 }
