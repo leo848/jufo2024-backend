@@ -67,3 +67,13 @@ impl Sum<HashScalar> for HashScalar {
         Self::sum(iter.map(|cost| cost.0))
     }
 }
+
+pub trait UsableFloat {
+    fn usable(self) -> HashScalar;
+}
+
+impl UsableFloat for f32 {
+    fn usable(self) -> HashScalar {
+        HashScalar::new(self)
+    }
+}

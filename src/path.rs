@@ -6,23 +6,30 @@ pub mod improvement;
 use std::ops::Range;
 
 use itertools::Itertools;
+
 use crate::{
     action::{DistPathCreateContext, DistPathImproveContext, PathCreateContext},
-    dist_graph::{self, Cost},
-    graph::{self, Weight},
+    dist_graph, graph,
     path::{creation::PathCreation, improvement::PathImprovement},
     DistPathCreation, DistPathImprovement, PathImproveContext,
 };
 
 pub trait CreateContext {
     type Path;
-    type Distance: Eq + Ord + Into<f32>;
     fn len(&self) -> usize;
     fn node_indices(&self) -> Range<usize> {
         0..self.len()
     }
-    fn dist(&self, nindex1: usize, nindex2: usize) -> Self::Distance;
-    fn dist_path(&self, path: &Self::Path) -> Self::Distance;
+    fn dist(&self, nindex1: usize, nindex2: usize) -> f32;
+    fn dist_path(&self, path: impl IntoIterator<Item = usize>) -> f32 {
+        path.into_iter()
+            .tuple_windows()
+            .map(|(l, r)| self.dist(l, r))
+            .sum()
+    }
+    fn cost(&self, path: &graph::Path) -> f32 {
+        self.dist_path(path.iter())
+    }
     fn send_path(&self, path: impl IntoIterator<Item = usize>, progress: Option<f32>);
     fn send_edges(&self, path: impl IntoIterator<Item = (usize, usize)>, progress: Option<f32>);
     fn path_from_indices(&self, path: impl IntoIterator<Item = usize>) -> Self::Path;
@@ -30,18 +37,13 @@ pub trait CreateContext {
 
 impl CreateContext for DistPathCreateContext {
     type Path = dist_graph::Path;
-    type Distance = Cost;
 
     fn len(&self) -> usize {
         self.points.len()
     }
 
-    fn dist(&self, nindex1: usize, nindex2: usize) -> Cost {
-        self.points[nindex1].dist(&self.points[nindex2], self.norm)
-    }
-
-    fn dist_path(&self, path: &Self::Path) -> Self::Distance {
-        path.cost(self.norm)
+    fn dist(&self, nindex1: usize, nindex2: usize) -> f32 {
+        self.graph.weight(nindex1, nindex2).into()
     }
 
     fn path_from_indices(&self, path: impl IntoIterator<Item = usize>) -> Self::Path {
@@ -78,18 +80,13 @@ impl CreateContext for DistPathCreateContext {
 
 impl CreateContext for PathCreateContext {
     type Path = graph::Path;
-    type Distance = Weight;
 
     fn len(&self) -> usize {
         self.graph.size()
     }
 
-    fn dist(&self, nindex1: usize, nindex2: usize) -> Weight {
-        self.graph.weight(nindex1, nindex2)
-    }
-
-    fn dist_path(&self, path: &Self::Path) -> Self::Distance {
-        self.graph.path_weight(path)
+    fn dist(&self, nindex1: usize, nindex2: usize) -> f32 {
+        self.graph.weight(nindex1, nindex2).into()
     }
 
     fn path_from_indices(&self, path: impl IntoIterator<Item = usize>) -> Self::Path {
@@ -119,7 +116,6 @@ impl CreateContext for PathCreateContext {
 
 pub trait ImproveContext {
     type Path;
-    type Distance: Eq + Ord + Into<f32>;
     fn len(&self) -> usize;
     fn node_indices(&self) -> Range<usize> {
         0..self.len()
@@ -127,10 +123,15 @@ pub trait ImproveContext {
     fn start_path(&self) -> graph::Path {
         graph::Path::new(self.node_indices().collect())
     }
-    fn dist(&self, nindex1: usize, nindex2: usize) -> Self::Distance;
-    fn dist_path(&self, path: &Self::Path) -> Self::Distance;
+    fn dist(&self, nindex1: usize, nindex2: usize) -> f32;
+    fn dist_path(&self, path: impl IntoIterator<Item = usize>) -> f32 {
+        path.into_iter()
+            .tuple_windows()
+            .map(|(l, r)| self.dist(l, r))
+            .sum()
+    }
     fn cost(&self, path: &graph::Path) -> f32 {
-        self.dist_path(&self.path_from_indices(path.iter())).into()
+        self.dist_path(path.iter()).into()
     }
     fn send_path(&self, path: impl IntoIterator<Item = usize>, progress: Option<f32>);
     fn path_from_indices(&self, path: impl IntoIterator<Item = usize>) -> Self::Path;
@@ -138,18 +139,13 @@ pub trait ImproveContext {
 
 impl ImproveContext for DistPathImproveContext {
     type Path = dist_graph::Path;
-    type Distance = Cost;
 
     fn len(&self) -> usize {
         self.path.len()
     }
 
-    fn dist(&self, nindex1: usize, nindex2: usize) -> Cost {
-        self.path[nindex1].dist(&self.path[nindex2], self.norm)
-    }
-
-    fn dist_path(&self, path: &Self::Path) -> Self::Distance {
-        path.cost(self.norm)
+    fn dist(&self, nindex1: usize, nindex2: usize) -> f32 {
+        self.graph.weight(nindex1, nindex2).into_inner()
     }
 
     fn send_path(&self, path: impl IntoIterator<Item = usize>, progress: Option<f32>) {
@@ -171,18 +167,13 @@ impl ImproveContext for DistPathImproveContext {
 
 impl ImproveContext for PathImproveContext {
     type Path = graph::Path;
-    type Distance = Weight;
 
     fn len(&self) -> usize {
         self.graph.size()
     }
 
-    fn dist(&self, nindex1: usize, nindex2: usize) -> Weight {
-        self.graph.weight(nindex1, nindex2)
-    }
-
-    fn dist_path(&self, path: &Self::Path) -> Self::Distance {
-        self.graph.path_weight(path)
+    fn dist(&self, nindex1: usize, nindex2: usize) -> f32 {
+        self.graph.weight(nindex1, nindex2).into_inner()
     }
 
     fn path_from_indices(&self, path: impl IntoIterator<Item = usize>) -> Self::Path {

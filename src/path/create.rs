@@ -5,7 +5,10 @@ use bimap::BiMap;
 use itertools::Itertools;
 
 use super::CreateContext;
-use crate::{graph, util::factorial};
+use crate::{
+    graph,
+    util::{factorial, UsableFloat},
+};
 
 pub fn transmute<C: CreateContext>(ctx: C) -> C::Path {
     ctx.path_from_indices(ctx.node_indices())
@@ -27,7 +30,7 @@ pub fn nearest_neighbor<C: CreateContext>(ctx: C) -> C::Path {
         let min = ctx
             .node_indices()
             .filter(|&ni| Not::not(visited.contains(&ni)))
-            .min_by_key(|&ni| ctx.dist(last, ni))
+            .min_by_key(|&ni| ctx.dist(last, ni).usable())
             .expect("point was empty even though path is not full");
 
         path.push(min.clone());
@@ -46,9 +49,7 @@ pub fn brute_force<C: CreateContext>(ctx: C) -> C::Path {
     let send_every = permutation_count.next_power_of_two() >> 5;
 
     for (i, permutation) in ctx.node_indices().permutations(ctx.len()).enumerate() {
-        let cost = ctx
-            .dist_path(&ctx.path_from_indices(permutation.iter().copied()))
-            .into();
+        let cost = ctx.dist_path(permutation.iter().copied()).into();
         if cost < min {
             min = cost;
             min_permutation = permutation;
@@ -68,7 +69,7 @@ pub fn greedy<C: CreateContext>(ctx: C) -> C::Path {
     let mut sorted_edge_iterator = ctx
         .node_indices()
         .tuple_windows()
-        .sorted_by_key(|(l, r)| ctx.dist(*l, *r));
+        .sorted_by_key(|(l, r)| ctx.dist(*l, *r).usable());
 
     let mut bimap = BiMap::with_capacity(ctx.len());
     let mut separate_list = Vec::<graph::Edge>::new();

@@ -11,7 +11,7 @@ pub fn rotate<C: ImproveContext>(ctx: C) -> C::Path {
     for i in 0..path.len() {
         let mut inner = path.clone();
         inner.rotate_left(i);
-        let cost = ctx.dist_path(&ctx.path_from_indices(inner)).into();
+        let cost = ctx.dist_path(inner.iter().copied()).into();
         if cost < min_cost {
             min_cost = cost;
             min_i = i;
@@ -19,7 +19,7 @@ pub fn rotate<C: ImproveContext>(ctx: C) -> C::Path {
         }
     }
 
-    if min_cost < ctx.dist_path(&ctx.path_from_indices(path.clone())).into() {
+    if min_cost < ctx.dist_path(path.iter().copied()).into() {
         let mut inner = path.clone();
         inner.rotate_left(min_i);
         ctx.path_from_indices(inner)

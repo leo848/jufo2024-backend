@@ -3,7 +3,8 @@ use std::{thread, time::Duration};
 use simple_websockets::Responder;
 
 use crate::{
-    dist_graph, graph,
+    dist_graph,
+    graph::{self, Graph},
     typed::{send, Norm},
     Output,
 };
@@ -32,6 +33,7 @@ pub struct DistPathCreateContext {
     pub action: ActionContext,
     pub dim: u8,
     pub points: Vec<dist_graph::Point>,
+    pub graph: Graph,
     pub norm: Norm,
 }
 
@@ -40,6 +42,7 @@ pub struct DistPathImproveContext {
     pub action: ActionContext,
     pub dim: u8,
     pub path: dist_graph::Path,
+    pub graph: Graph,
     pub norm: Norm,
 }
 

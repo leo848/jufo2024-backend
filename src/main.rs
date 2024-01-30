@@ -14,6 +14,7 @@ use action::{
     PathCreateContext, PathImproveContext,
 };
 use graph::Graph;
+use itertools::Itertools;
 use path::improvement::PathImprovement;
 use simple_websockets::Responder;
 use typed::{Action, Output};
@@ -106,14 +107,18 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
             norm,
         } => {
             let method = method.dist_implementation();
-            let points = values.into_iter().map(|v| dist_graph::Point::new(v)).collect();
+            let points = values
+                .into_iter()
+                .map(|v| dist_graph::Point::new(v))
+                .collect_vec();
             let ctx = DistPathCreateContext {
                 action: ActionContext {
                     client: client.clone(),
                     latency,
                 },
                 dim,
-                points,
+                points: points.clone(),
+                graph: Graph::from_points(points, norm),
                 norm,
             };
             let path = method(ctx);
@@ -135,7 +140,8 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
                     latency,
                 },
                 dim,
-                path: old_path,
+                path: old_path.clone(),
+                graph: Graph::from_points(old_path.into_inner(), norm),
                 norm,
             };
             let improved_path = method(ctx);

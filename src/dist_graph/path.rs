@@ -20,6 +20,11 @@ impl Path {
     pub fn try_new_raw(values: Vec<Vec<Scalar>>, dim: u8) -> Option<Self> {
         Self::try_new(values.into_iter().map(Point::new).collect(), dim)
     }
+
+    pub fn into_inner(self) -> Vec<Point> {
+        self.0
+    }
+
     pub fn cost(&self, norm: Norm) -> Cost {
         self.0.windows(2).map(|s| s[0].dist(&s[1], norm)).sum()
     }

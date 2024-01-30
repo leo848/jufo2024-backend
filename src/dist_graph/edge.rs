@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::    dist_graph::Point ;
+use crate::dist_graph::Point;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
 pub struct Edge(Point, Point);

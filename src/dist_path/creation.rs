@@ -1,8 +1,7 @@
-use crate::dist_graph::Edge;
 use serde::Serialize;
 
 use crate::{
-    dist_graph::Path,
+    dist_graph::{Edge, Path},
     Output,
 };
 
