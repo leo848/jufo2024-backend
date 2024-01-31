@@ -78,6 +78,7 @@ pub enum PathImproveMethod {
     Swap,
     TwoOpt,
     ThreeOpt,
+    InnerRotate,
     SimulatedAnnealing,
 }
 
@@ -86,6 +87,7 @@ impl PathImproveMethod {
     pub fn dist_implementation(self) -> fn(DistPathImproveContext) -> dist_graph::Path {
         match self {
             Self::Rotate => path::improve::rotate,
+            Self::InnerRotate => path::improve::inner_rotate,
             Self::TwoOpt => path::improve::two_opt,
             Self::ThreeOpt => path::improve::three_opt,
             Self::Swap => path::improve::swap,
@@ -97,6 +99,7 @@ impl PathImproveMethod {
     pub fn implementation(self) -> fn(PathImproveContext) -> graph::Path {
         match self {
             Self::Rotate => path::improve::rotate,
+            Self::InnerRotate => path::improve::inner_rotate,
             Self::TwoOpt => path::improve::two_opt,
             Self::ThreeOpt => path::improve::three_opt,
             Self::Swap => path::improve::swap,

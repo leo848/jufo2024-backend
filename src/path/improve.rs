@@ -151,6 +151,38 @@ pub fn swap<C: ImproveContext>(ctx: C) -> C::Path {
     ctx.path_from_indices(path.iter())
 }
 
+pub fn inner_rotate<C: ImproveContext>(ctx: C) -> C::Path {
+    let mut improvement = true;
+    let mut path = ctx.start_path();
+    let mut best_cost = ctx.cost(&path);
+
+    'improvin: while improvement {
+        improvement = false;
+        for start in 0..path.len() {
+                            ctx.send_path(path.iter(),
+                                Some(start as f32 / path.len() as f32),
+                            );
+            for end in start + 1 ..path.len() {
+                for amount in 1 .. end - start {
+                    path.as_mut()[start..end].rotate_left(amount);
+                    let new_cost = ctx.cost(&path);
+                    if new_cost < best_cost {
+                            ctx.send_path(path.iter(),
+                                Some((start * path.len() + end) as f32 / ((path.len() * path.len()) as f32) ),
+                            );
+                            best_cost = new_cost;
+                            improvement = true;
+                            continue 'improvin;
+                    }
+                    path.as_mut()[start..end].rotate_right(amount);
+                }
+            }
+        }
+    }
+
+    ctx.path_from_indices(path.iter())
+}
+
 pub fn simulated_annealing<C: ImproveContext>(ctx: C) -> C::Path {
     let mut path = ctx.start_path();
 
