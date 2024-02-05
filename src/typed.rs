@@ -269,8 +269,8 @@ pub fn poll(event_hub: &EventHub, clients: &mut HashMap<u64, Responder>) -> (Res
 
 pub fn send(client: &Responder, message: impl Into<Output>) {
     autorestart::update();
-    let string = serde_json::to_string(&message.into()).expect("Bug: could not serialize string");
-    // eprintln!("send {}", string);
+    let string = serde_json::to_string(&message.into())
+        .expect("Bug: could not serialize string");
     client.send(Message::Text(string));
 }
 
