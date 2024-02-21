@@ -1,6 +1,8 @@
 use std::{thread, time::Duration};
 
 use simple_websockets::Responder;
+use std::sync::Mutex;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::{
     dist_graph,
@@ -8,6 +10,8 @@ use crate::{
     typed::{send, Norm},
     Output,
 };
+
+static LAST_ACTION_SEND: Mutex<u128> = Mutex::new(0);
 
 #[derive(Clone)]
 pub struct ActionContext {
@@ -17,8 +21,16 @@ pub struct ActionContext {
 
 impl ActionContext {
     pub fn send(&self, message: impl Into<Output>) {
+        let current = SystemTime::now().duration_since(UNIX_EPOCH).expect("Zeit rückwärts").as_millis();
+        let mut last_send_time = LAST_ACTION_SEND.lock().unwrap();
+        let duration_millis = (self.latency as u128).checked_sub(current - *last_send_time);
+        dbg!(*last_send_time, current, self.latency, duration_millis);
+        if let Some(sleep_time) = duration_millis {
+            thread::sleep(Duration::from_millis(sleep_time as u64));
+        }
+        let current = SystemTime::now().duration_since(UNIX_EPOCH).expect("Zeit rückwärts").as_millis();
+        *last_send_time = current;
         send(&self.client, message);
-        thread::sleep(Duration::from_millis(self.latency));
     }
 }
 
