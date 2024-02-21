@@ -208,7 +208,8 @@ pub fn simulated_annealing<C: ImproveContext>(ctx: C) -> C::Path {
         let new_cost = ctx.cost(&path);
         let cost_delta = new_cost - cost;
         // let cost_delta = path.cost_delta_under_swap(index1, index2, norm);
-        if cost_delta < 0.0 || fastrand::f32() < f32::exp(-((cost_delta) / temperature as f32)) {
+        let thresh = f32::exp(-(cost_delta / temperature as f32));
+        if cost_delta < 0.0 || fastrand::f32() < thresh {
             // path.swap(index1, index2);
             // cost += cost_delta;
             cost = new_cost;
