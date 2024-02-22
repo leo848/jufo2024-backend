@@ -162,7 +162,7 @@ pub enum Input {
     },
     Latency,
     WordToVec {
-        word: String,
+        word: Option<String>,
     },
 }
 
@@ -212,6 +212,9 @@ pub enum Output {
         word: String,
         result: WordToVecResult,
     },
+    RandomWord {
+        word: String,
+    }
 }
 
 /// Polls the event hub for a new event.

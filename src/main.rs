@@ -70,12 +70,21 @@ fn main() {
             }
             Input::WordToVec { word } => {
                 if let Some(ref word_model) = word_model {
-                    word_to_vec(&word_model, word, client.clone());
+                    if let Some(word) = word {
+                        word_to_vec(&word_model, word, client.clone());
+                    } else {
+                        typed::send(
+                            &client,
+                            Output::RandomWord {
+                                word: word_model.random_word().to_string()
+                            }
+                        );
+                    }
                 } else {
                     typed::send(
                         &client,
                         Output::WordToVec {
-                            word,
+                            word: word.unwrap_or(format!("Zufallsprinzip")),
                             result: WordToVecResult::Unsupported,
                         },
                     )

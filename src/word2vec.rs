@@ -6,6 +6,7 @@ use word2vec::wordvectors::WordVector;
 pub struct Model {
     model: WordVector,
     vocabulary: HashSet<String>,
+    vocab_vec: Vec<String>,
 }
 
 impl Model {
@@ -20,10 +21,12 @@ impl Model {
 
         let model = WordVector::load_from_binary(&model_file.as_ref().to_string_lossy())?;
         let vocab = model.get_words().collect();
+        let vocab_vec = model.get_words().collect();
 
         Ok(Self {
             model,
             vocabulary: vocab,
+            vocab_vec,
         })
     }
 
@@ -33,6 +36,14 @@ impl Model {
         } else {
             let vec = self.model.get_vector(string).unwrap().clone();
             Ok(WordVec { vec })
+        }
+    }
+
+    pub fn random_word(&self) -> &str {
+        loop {
+            let word = &self.vocab_vec[fastrand::usize(..self.vocab_vec.len())];
+            let valid = word.chars().all(|c| ('a'..='z').contains(&c) || ['ä','ö','ü','ß','-'].contains(&c));
+            if valid { break word }
         }
     }
 }
