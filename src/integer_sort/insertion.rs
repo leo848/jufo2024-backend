@@ -3,7 +3,7 @@ use crate::{
     IntegerSortContext, SortedNumbers,
 };
 
-pub fn insertion(ctx: IntegerSortContext) -> Vec<u64> {
+pub fn insertion(ctx: IntegerSortContext) -> Vec<i64> {
     let IntegerSortContext {
         mut numbers,
         action,

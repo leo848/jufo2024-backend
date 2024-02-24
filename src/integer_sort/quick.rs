@@ -6,7 +6,7 @@ use crate::{
     IntegerSortContext, SortedNumbers,
 };
 
-pub fn quick(ctx: IntegerSortContext) -> Vec<u64> {
+pub fn quick(ctx: IntegerSortContext) -> Vec<i64> {
     let IntegerSortContext {
         action,
         mut numbers,
@@ -18,7 +18,7 @@ pub fn quick(ctx: IntegerSortContext) -> Vec<u64> {
     numbers
 }
 
-pub fn quick_rec(numbers: &mut [u64], bounds: Range<usize>, action: ActionContext) {
+pub fn quick_rec(numbers: &mut [i64], bounds: Range<usize>, action: ActionContext) {
     if bounds.len() <= 1 {
         return;
     }

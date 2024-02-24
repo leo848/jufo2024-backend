@@ -36,7 +36,7 @@ impl ActionContext {
 #[derive(Clone)]
 pub struct IntegerSortContext {
     pub action: ActionContext,
-    pub numbers: Vec<u64>,
+    pub numbers: Vec<i64>,
 }
 
 #[derive(Clone)]

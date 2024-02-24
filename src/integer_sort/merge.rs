@@ -1,13 +1,13 @@
 use std::ops::Range;
 
 use crate::{action::ActionContext, typed::Highlight::Correct, IntegerSortContext, SortedNumbers};
-pub fn merge(ctx: IntegerSortContext) -> Vec<u64> {
+pub fn merge(ctx: IntegerSortContext) -> Vec<i64> {
     let IntegerSortContext { action, numbers } = ctx;
 
     merge_rec(numbers.as_slice(), 0..numbers.len(), action)
 }
 
-fn merge_rec(numbers: &[u64], range: Range<usize>, action: ActionContext) -> Vec<u64> {
+fn merge_rec(numbers: &[i64], range: Range<usize>, action: ActionContext) -> Vec<i64> {
     let mut numbers = numbers.to_vec();
 
     if range.len() <= 1 {
@@ -47,7 +47,7 @@ fn merge_rec(numbers: &[u64], range: Range<usize>, action: ActionContext) -> Vec
     merge_vectors(to_merge_1, to_merge_2)
 }
 
-fn merge_vectors(a: Vec<u64>, b: Vec<u64>) -> Vec<u64> {
+fn merge_vectors(a: Vec<i64>, b: Vec<i64>) -> Vec<i64> {
     let mut result = Vec::with_capacity(a.len() + b.len());
     let (mut a_iter, mut b_iter) = (a.iter().copied().peekable(), b.iter().copied().peekable());
 

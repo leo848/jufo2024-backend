@@ -26,7 +26,7 @@ pub enum IntegerSortAlgorithm {
 }
 
 impl IntegerSortAlgorithm {
-    pub fn implementation(self) -> fn(IntegerSortContext) -> Vec<u64> {
+    pub fn implementation(self) -> fn(IntegerSortContext) -> Vec<i64> {
         match self {
             Self::Bubble => integer_sort::bubble,
             Self::Insertion => integer_sort::insertion,
@@ -121,7 +121,7 @@ pub enum Norm {
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum Action {
     SortNumbers {
-        numbers: Vec<u64>,
+        numbers: Vec<i64>,
         algorithm: IntegerSortAlgorithm,
     },
     CreateDistPath {
@@ -199,7 +199,7 @@ pub enum Output {
     },
     SortedNumbers {
         done: bool,
-        numbers: Vec<u64>,
+        numbers: Vec<i64>,
         highlight: Vec<(usize, Highlight)>,
     },
     DistPathCreation(DistPathCreation),

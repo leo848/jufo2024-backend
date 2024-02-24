@@ -3,7 +3,7 @@ use crate::{
     IntegerSortContext, SortedNumbers,
 };
 
-pub fn bubble(ctx: IntegerSortContext) -> Vec<u64> {
+pub fn bubble(ctx: IntegerSortContext) -> Vec<i64> {
     let IntegerSortContext {
         mut numbers,
         action,

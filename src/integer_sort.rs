@@ -23,12 +23,12 @@ pub use selection::selection;
 #[derive(Debug, Clone, Serialize)]
 pub struct SortedNumbers {
     done: bool,
-    numbers: Vec<u64>,
+    numbers: Vec<i64>,
     highlight: HashMap<usize, Highlight>,
 }
 
 impl SortedNumbers {
-    pub fn new(numbers: &[u64]) -> Self {
+    pub fn new(numbers: &[i64]) -> Self {
         Self {
             numbers: numbers.to_owned(),
             done: false,
