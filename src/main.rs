@@ -68,10 +68,10 @@ fn main() {
                     .as_millis();
                 typed::send(&client, Output::Latency { time_millis });
             }
-            Input::WordToVec { word } => {
+            Input::WordToVec { word, desc } => {
                 if let Some(ref word_model) = word_model {
                     if let Some(word) = word {
-                        word_to_vec(&word_model, word, client.clone());
+                        word_to_vec(&word_model, word, desc, client.clone());
                     } else {
                         typed::send(
                             &client,
@@ -84,6 +84,7 @@ fn main() {
                     typed::send(
                         &client,
                         Output::WordToVec {
+                            desc,
                             word: word.unwrap_or(format!("Zufallsprinzip")),
                             result: WordToVecResult::Unsupported,
                         },
@@ -193,7 +194,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
     }
 }
 
-fn word_to_vec(word_model: &Model, word: String, client: Responder) {
+fn word_to_vec(word_model: &Model, word: String, desc: Option<String>, client: Responder) {
     let vec_for = word_model.vec_for(&word);
     let result = match vec_for {
         Ok(vec) => WordToVecResult::Ok {
@@ -205,5 +206,5 @@ fn word_to_vec(word_model: &Model, word: String, client: Responder) {
         },
     };
 
-    typed::send(&client, Output::WordToVec { word, result })
+    typed::send(&client, Output::WordToVec { word, result, desc })
 }

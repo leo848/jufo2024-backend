@@ -24,7 +24,6 @@ impl ActionContext {
         let current = SystemTime::now().duration_since(UNIX_EPOCH).expect("Zeit rückwärts").as_millis();
         let mut last_send_time = LAST_ACTION_SEND.lock().unwrap();
         let duration_millis = (self.latency as u128).checked_sub(current - *last_send_time);
-        dbg!(*last_send_time, current, self.latency, duration_millis);
         if let Some(sleep_time) = duration_millis {
             thread::sleep(Duration::from_millis(sleep_time as u64));
         }

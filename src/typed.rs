@@ -163,6 +163,8 @@ pub enum Input {
     Latency,
     WordToVec {
         word: Option<String>,
+        #[serde(default)]
+        desc: Option<String>,
     },
 }
 
@@ -210,6 +212,7 @@ pub enum Output {
     },
     WordToVec {
         word: String,
+        desc: Option<String>,
         result: WordToVecResult,
     },
     RandomWord {
