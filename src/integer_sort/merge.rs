@@ -1,5 +1,7 @@
 use std::ops::Range;
 
+use itertools::Itertools;
+
 use crate::{action::ActionContext, typed::Highlight::Correct, IntegerSortContext, SortedNumbers};
 pub fn merge(ctx: IntegerSortContext) -> Vec<i64> {
     let IntegerSortContext { action, numbers } = ctx;
@@ -43,6 +45,15 @@ fn merge_rec(numbers: &[i64], range: Range<usize>, action: ActionContext) -> Vec
         SortedNumbers::new(&numbers)
             .highlights((range.start + range.len() / 2..range.end).map(|i| (i, Correct))),
     );
+
+    for index in range.clone() {
+        let Some(min_index) = numbers[index..range.end].into_iter().position_min() else { break };
+        numbers.swap(index, min_index+index);
+        action.send(
+            SortedNumbers::new(&numbers)
+                .highlights((range.start .. index).map(|i| (i, Correct)))
+        );
+    }
 
     merge_vectors(to_merge_1, to_merge_2)
 }
