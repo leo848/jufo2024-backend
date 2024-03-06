@@ -117,6 +117,13 @@ pub enum Norm {
     Max,
 }
 
+#[derive(Deserialize, Debug, Clone, Copy, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct Metric {
+    pub norm: Norm,
+    pub invert: bool,
+}
+
 #[derive(Deserialize, Debug, Clone)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum Action {
@@ -128,14 +135,14 @@ pub enum Action {
         dimensions: u8,
         values: Vec<Vec<f32>>,
         #[serde(default)]
-        norm: Norm,
+        metric: Metric,
         method: PathCreateMethod,
     },
     ImproveDistPath {
         dimensions: u8,
         path: Vec<Vec<f32>>,
         #[serde(default)]
-        norm: Norm,
+        metric: Metric,
         method: PathImproveMethod,
     },
     CreatePath {
@@ -217,7 +224,7 @@ pub enum Output {
     },
     RandomWord {
         word: String,
-    }
+    },
 }
 
 /// Polls the event hub for a new event.
@@ -275,8 +282,7 @@ pub fn poll(event_hub: &EventHub, clients: &mut HashMap<u64, Responder>) -> (Res
 
 pub fn send(client: &Responder, message: impl Into<Output>) {
     autorestart::update();
-    let string = serde_json::to_string(&message.into())
-        .expect("Bug: could not serialize string");
+    let string = serde_json::to_string(&message.into()).expect("Bug: could not serialize string");
     client.send(Message::Text(string));
 }
 

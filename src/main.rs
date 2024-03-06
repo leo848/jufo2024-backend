@@ -76,8 +76,8 @@ fn main() {
                         typed::send(
                             &client,
                             Output::RandomWord {
-                                word: word_model.random_word().to_string()
-                            }
+                                word: word_model.random_word().to_string(),
+                            },
                         );
                     }
                 } else {
@@ -114,7 +114,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
             dimensions: dim,
             values,
             method,
-            norm,
+            metric,
         } => {
             let method = method.dist_implementation();
             let points = values
@@ -128,8 +128,8 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
                 },
                 dim,
                 points: points.clone(),
-                graph: Graph::from_points(points, norm),
-                norm,
+                graph: Graph::from_points(points, metric),
+                metric,
             };
             let path = method(ctx);
 
@@ -139,7 +139,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
             dimensions: dim,
             path,
             method,
-            norm,
+            metric,
         } => {
             let method = method.dist_implementation();
             let old_path =
@@ -151,8 +151,8 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
                 },
                 dim,
                 path: old_path.clone(),
-                graph: Graph::from_points(old_path.into_inner(), norm),
-                norm,
+                graph: Graph::from_points(old_path.into_inner(), metric),
+                metric,
             };
             let improved_path = method(ctx);
 

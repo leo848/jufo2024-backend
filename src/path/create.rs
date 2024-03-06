@@ -69,7 +69,7 @@ pub fn greedy<C: CreateContext>(ctx: C) -> C::Path {
     let mut sorted_edge_iterator = ctx
         .node_indices()
         .cartesian_product(ctx.node_indices())
-        .filter(|(l,r)|l!=r)
+        .filter(|(l, r)| l != r)
         .sorted_by_key(|(l, r)| ctx.dist(*l, *r).usable());
 
     // BiMap von Knoten
@@ -80,7 +80,6 @@ pub fn greedy<C: CreateContext>(ctx: C) -> C::Path {
         let next_try = sorted_edge_iterator
             .next()
             .expect("there should be edges left");
-
 
         let insert = bimap.insert_no_overwrite(next_try.0, next_try.1);
         if insert.is_err() {

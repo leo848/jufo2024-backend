@@ -6,7 +6,7 @@ pub use weight::Weight;
 
 use crate::{
     dist_graph::{Point, Scalar},
-    typed::Norm,
+    typed::Metric,
 };
 
 mod edge;
@@ -28,7 +28,7 @@ impl Graph {
         Matrix::new(values).map(Self::from_matrix)
     }
 
-    pub fn from_points(points: Vec<Point>, norm: Norm) -> Self {
+    pub fn from_points(points: Vec<Point>, norm: Metric) -> Self {
         let costs = points
             .iter()
             .map(|point1| {

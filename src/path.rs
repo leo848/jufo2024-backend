@@ -46,7 +46,11 @@ impl CreateContext for DistPathCreateContext {
 
     fn dist(&self, nindex1: usize, nindex2: usize) -> f32 {
         let value: f32 = self.graph.weight(nindex1, nindex2).into();
-        if PESSIMAL { -value } else { value }
+        if PESSIMAL {
+            -value
+        } else {
+            value
+        }
     }
 
     fn path_from_indices(&self, path: impl IntoIterator<Item = usize>) -> Self::Path {
@@ -90,7 +94,11 @@ impl CreateContext for PathCreateContext {
 
     fn dist(&self, nindex1: usize, nindex2: usize) -> f32 {
         let value: f32 = self.graph.weight(nindex1, nindex2).into();
-        if PESSIMAL { -value } else { value }
+        if PESSIMAL {
+            -value
+        } else {
+            value
+        }
     }
 
     fn path_from_indices(&self, path: impl IntoIterator<Item = usize>) -> Self::Path {
@@ -150,7 +158,11 @@ impl ImproveContext for DistPathImproveContext {
 
     fn dist(&self, nindex1: usize, nindex2: usize) -> f32 {
         let value = self.graph.weight(nindex1, nindex2).into_inner();
-        if PESSIMAL { -value } else { value }
+        if PESSIMAL {
+            -value
+        } else {
+            value
+        }
     }
 
     fn send_path(&self, path: impl IntoIterator<Item = usize>, progress: Option<f32>) {
@@ -179,7 +191,11 @@ impl ImproveContext for PathImproveContext {
 
     fn dist(&self, nindex1: usize, nindex2: usize) -> f32 {
         let value = self.graph.weight(nindex1, nindex2).into_inner();
-        if PESSIMAL { -value } else { value }
+        if PESSIMAL {
+            -value
+        } else {
+            value
+        }
     }
 
     fn path_from_indices(&self, path: impl IntoIterator<Item = usize>) -> Self::Path {

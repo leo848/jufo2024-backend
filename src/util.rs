@@ -4,7 +4,7 @@ pub fn factorial(n: usize) -> usize {
 }
 
 use core::{hash::Hash, iter::Sum, ops::Add};
-use std::ops::AddAssign;
+use std::ops::{AddAssign, Neg};
 
 use serde::Serialize;
 
@@ -65,6 +65,14 @@ impl Sum<Scalar> for HashScalar {
 impl Sum<HashScalar> for HashScalar {
     fn sum<I: Iterator<Item = HashScalar>>(iter: I) -> Self {
         Self::sum(iter.map(|cost| cost.0))
+    }
+}
+
+impl Neg for HashScalar {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Self(-self.0)
     }
 }
 

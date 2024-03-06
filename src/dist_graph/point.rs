@@ -4,7 +4,7 @@ use serde::Serialize;
 
 use crate::{
     dist_graph::{Cost, Scalar},
-    typed::Norm,
+    typed::{Metric, Norm},
 };
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Point(Vec<Scalar>);
@@ -59,11 +59,16 @@ impl Point {
         )
     }
     #[inline]
-    pub fn dist(&self, other: &Point, norm: Norm) -> Cost {
-        match norm {
+    pub fn dist(&self, other: &Point, metric: Metric) -> Cost {
+        let normed = match metric.norm {
             Norm::Manhattan => self.manhattan_dist(other),
             Norm::Euclidean => self.euclidean_dist(other),
             Norm::Max => self.max_dist(other),
+        };
+        if metric.invert {
+            -normed
+        } else {
+            normed
         }
     }
 }

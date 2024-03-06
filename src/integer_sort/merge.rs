@@ -47,11 +47,12 @@ fn merge_rec(numbers: &[i64], range: Range<usize>, action: ActionContext) -> Vec
     );
 
     for index in range.clone() {
-        let Some(min_index) = numbers[index..range.end].into_iter().position_min() else { break };
-        numbers.swap(index, min_index+index);
+        let Some(min_index) = numbers[index..range.end].into_iter().position_min() else {
+            break;
+        };
+        numbers.swap(index, min_index + index);
         action.send(
-            SortedNumbers::new(&numbers)
-                .highlights((range.start .. index).map(|i| (i, Correct)))
+            SortedNumbers::new(&numbers).highlights((range.start..index).map(|i| (i, Correct))),
         );
     }
 

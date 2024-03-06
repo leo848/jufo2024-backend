@@ -159,20 +159,22 @@ pub fn inner_rotate<C: ImproveContext>(ctx: C) -> C::Path {
     'improvin: while improvement {
         improvement = false;
         for start in 0..path.len() {
-                            ctx.send_path(path.iter(),
-                                Some(start as f32 / path.len() as f32),
-                            );
-            for end in start + 1 ..path.len() {
-                for amount in 1 .. end - start {
+            ctx.send_path(path.iter(), Some(start as f32 / path.len() as f32));
+            for end in start + 1..path.len() {
+                for amount in 1..end - start {
                     path.as_mut()[start..end].rotate_left(amount);
                     let new_cost = ctx.cost(&path);
                     if new_cost < best_cost {
-                            ctx.send_path(path.iter(),
-                                Some((start * path.len() + end) as f32 / ((path.len() * path.len()) as f32) ),
-                            );
-                            best_cost = new_cost;
-                            improvement = true;
-                            continue 'improvin;
+                        ctx.send_path(
+                            path.iter(),
+                            Some(
+                                (start * path.len() + end) as f32
+                                    / ((path.len() * path.len()) as f32),
+                            ),
+                        );
+                        best_cost = new_cost;
+                        improvement = true;
+                        continue 'improvin;
                     }
                     path.as_mut()[start..end].rotate_right(amount);
                 }

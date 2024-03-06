@@ -42,8 +42,12 @@ impl Model {
     pub fn random_word(&self) -> &str {
         loop {
             let word = &self.vocab_vec[fastrand::usize(..self.vocab_vec.len())];
-            let valid = word.chars().all(|c| ('a'..='z').contains(&c) || ['ä','ö','ü','ß','-'].contains(&c));
-            if valid { break word }
+            let valid = word
+                .chars()
+                .all(|c| ('a'..='z').contains(&c) || ['ä', 'ö', 'ü', 'ß', '-'].contains(&c));
+            if valid {
+                break word;
+            }
         }
     }
 }

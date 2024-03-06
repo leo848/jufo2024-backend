@@ -1,5 +1,5 @@
 use core::iter::Sum;
-use std::ops::Add;
+use std::ops::{Add, Neg};
 
 use derive_more::Sum;
 use serde::Serialize;
@@ -46,5 +46,13 @@ impl Sum<f32> for Cost {
 impl From<Cost> for f32 {
     fn from(value: Cost) -> Self {
         value.into_inner()
+    }
+}
+
+impl Neg for Cost {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Cost(-self.0)
     }
 }

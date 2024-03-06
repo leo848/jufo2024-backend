@@ -6,7 +6,7 @@ use serde::Serialize;
 
 use crate::{
     dist_graph::{Cost, Edge, Point, Scalar},
-    typed::Norm,
+    typed::Metric,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -25,7 +25,7 @@ impl Path {
         self.0
     }
 
-    pub fn cost(&self, norm: Norm) -> Cost {
+    pub fn cost(&self, norm: Metric) -> Cost {
         self.0.windows(2).map(|s| s[0].dist(&s[1], norm)).sum()
     }
 
