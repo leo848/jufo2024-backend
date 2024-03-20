@@ -6,15 +6,15 @@ use std::{
 };
 
 #[cfg(unix)]
-use chksum::{chksum, hash::MD5};
+use chksum::{chksum, MD5};
 
 static HASH: AtomicU64 = AtomicU64::new(u64::MAX);
 
 #[cfg(unix)]
 pub fn update() {
-    let digest = chksum::<MD5, _>(Path::new(env!("CARGO_MANIFEST_DIR")).join("src"))
+    let digest = chksum::<MD5>(Path::new(env!("CARGO_MANIFEST_DIR")).join("src"))
         .expect("Failed to create digest");
-    let bytes: [u8; 16] = digest.into();
+    let bytes: [u8; 16] = digest.into_inner();
     let hash = {
         let mut hasher = DefaultHasher::new();
         hasher.write_u128(u128::from_ne_bytes(bytes));
