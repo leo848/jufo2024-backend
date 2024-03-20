@@ -43,6 +43,7 @@ pub enum PathCreateMethod {
     Transmute,
     Random,
     NearestNeighbor,
+    OptimalNearestNeighbor,
     BruteForce,
     Greedy,
 }
@@ -54,6 +55,7 @@ impl PathCreateMethod {
             Self::Transmute => path::create::transmute,
             Self::Random => path::create::random,
             Self::NearestNeighbor => path::create::nearest_neighbor,
+            Self::OptimalNearestNeighbor => path::create::optimal_nearest_neighbor,
             Self::BruteForce => path::create::brute_force,
             Self::Greedy => path::create::greedy,
         }
@@ -65,6 +67,7 @@ impl PathCreateMethod {
             Self::Transmute => path::create::transmute,
             Self::Random => path::create::random,
             Self::NearestNeighbor => path::create::nearest_neighbor,
+            Self::OptimalNearestNeighbor => path::create::optimal_nearest_neighbor,
             Self::BruteForce => path::create::brute_force,
             Self::Greedy => path::create::greedy,
         }

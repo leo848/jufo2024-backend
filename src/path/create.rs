@@ -40,6 +40,38 @@ pub fn nearest_neighbor<C: CreateContext>(ctx: C) -> C::Path {
     ctx.path_from_indices(path.iter())
 }
 
+pub fn optimal_nearest_neighbor<C: CreateContext>(ctx: C) -> C::Path {
+    let mut best_path: Option<graph::Path> = None;
+
+    for start_point in ctx.node_indices() {
+        let mut visited = HashSet::new();
+        let mut path = graph::Path::new(vec![start_point]);
+        while path.len() != ctx.len() {
+            let last = path[path.len() - 1];
+            visited.insert(last.clone());
+
+            let min = ctx
+                .node_indices()
+                .filter(|&ni| Not::not(visited.contains(&ni)))
+                .min_by_key(|&ni| ctx.dist(last, ni).usable())
+                .expect("point was empty even though path is not full");
+
+            path.push(min.clone());
+            if start_point == 0 {
+                ctx.send_path(path.iter(), Some(path.len() as f32 / ctx.len() as f32 / 2.0));
+            }
+        }
+
+
+        ctx.send_path(path.iter(), Some(start_point as f32 / ctx.len() as f32 / 2.0 + 0.5));
+        if best_path.clone().map(|best_path| ctx.cost(&path) < ctx.cost(&best_path)).unwrap_or(true) {
+            best_path = Some(path);
+        }
+    }
+
+    ctx.path_from_indices(best_path.expect("No path").iter())
+}
+
 pub fn brute_force<C: CreateContext>(ctx: C) -> C::Path {
     let mut min = f32::INFINITY;
 
