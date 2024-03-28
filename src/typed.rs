@@ -146,16 +146,21 @@ pub enum Action {
         path: Vec<Vec<f32>>,
         #[serde(default)]
         metric: Metric,
+        #[serde(default)]
+        prefer_step: bool,
         method: PathImproveMethod,
     },
     CreatePath {
         matrix: Vec<Vec<f32>>,
         method: PathCreateMethod,
     },
+    #[serde(rename_all = "camelCase")]
     ImprovePath {
         path: Vec<usize>,
         matrix: Vec<Vec<f32>>,
         method: PathImproveMethod,
+        #[serde(default)]
+        prefer_step: bool,
     },
 }
 

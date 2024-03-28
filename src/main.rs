@@ -138,6 +138,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
         Action::ImproveDistPath {
             dimensions: dim,
             path,
+            prefer_step,
             method,
             metric,
         } => {
@@ -150,6 +151,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
                     latency,
                 },
                 dim,
+                prefer_step,
                 path: old_path.clone(),
                 graph: Graph::from_points(old_path.into_inner(), metric),
                 metric,
@@ -175,6 +177,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
             path,
             matrix,
             method,
+            prefer_step,
         } => {
             let method = method.implementation();
             let input_graph = Graph::from_values(matrix).expect("invalid matrix");
@@ -182,6 +185,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
             let ctx = PathImproveContext {
                 graph: input_graph,
                 path: old_path,
+                prefer_step,
                 action: ActionContext {
                     client: client.clone(),
                     latency,

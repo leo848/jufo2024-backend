@@ -63,6 +63,7 @@ pub struct DistPathImproveContext {
     pub path: dist_graph::Path,
     pub graph: Graph,
     pub metric: Metric,
+    pub prefer_step: bool,
 }
 
 #[derive(Clone)]
@@ -76,4 +77,5 @@ pub struct PathImproveContext {
     pub action: ActionContext,
     pub path: graph::Path,
     pub graph: graph::Graph,
+    pub prefer_step: bool,
 }

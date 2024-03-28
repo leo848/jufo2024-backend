@@ -147,6 +147,7 @@ pub trait ImproveContext {
     }
     fn send_path(&self, path: impl IntoIterator<Item = usize>, progress: Option<f32>);
     fn path_from_indices(&self, path: impl IntoIterator<Item = usize>) -> Self::Path;
+    fn prefer_step(&self) -> bool;
 }
 
 impl ImproveContext for DistPathImproveContext {
@@ -180,6 +181,10 @@ impl ImproveContext for DistPathImproveContext {
         )
         .expect("invalid dimension")
     }
+
+    fn prefer_step(&self) -> bool {
+        self.prefer_step
+    }
 }
 
 impl ImproveContext for PathImproveContext {
@@ -208,5 +213,9 @@ impl ImproveContext for PathImproveContext {
             pc = pc.progress(p);
         }
         self.action.send(pc);
+    }
+
+    fn prefer_step(&self) -> bool {
+        self.prefer_step
     }
 }

@@ -58,13 +58,22 @@ pub fn optimal_nearest_neighbor<C: CreateContext>(ctx: C) -> C::Path {
 
             path.push(min.clone());
             if start_point == 0 {
-                ctx.send_path(path.iter(), Some(path.len() as f32 / ctx.len() as f32 / 2.0));
+                ctx.send_path(
+                    path.iter(),
+                    Some(path.len() as f32 / ctx.len() as f32 / 2.0),
+                );
             }
         }
 
-
-        ctx.send_path(path.iter(), Some(start_point as f32 / ctx.len() as f32 / 2.0 + 0.5));
-        if best_path.clone().map(|best_path| ctx.cost(&path) < ctx.cost(&best_path)).unwrap_or(true) {
+        ctx.send_path(
+            path.iter(),
+            Some(start_point as f32 / ctx.len() as f32 / 2.0 + 0.5),
+        );
+        if best_path
+            .clone()
+            .map(|best_path| ctx.cost(&path) < ctx.cost(&best_path))
+            .unwrap_or(true)
+        {
             best_path = Some(path);
         }
     }
