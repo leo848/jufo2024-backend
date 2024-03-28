@@ -51,7 +51,9 @@ pub fn two_opt<C: ImproveContext>(ctx: C) -> C::Path {
                     );
                 }
                 if new_cost < best_cost {
-                    improvement = true;
+                    if !ctx.prefer_step() {
+                        improvement = true;
+                    }
                     best_cost = new_cost;
                     continue 'improvin;
                 }
@@ -106,7 +108,9 @@ pub fn three_opt<C: ImproveContext>(ctx: C) -> C::Path {
                             );
                         }
                         if new_cost < best_cost {
-                            improvement = true;
+                            if !ctx.prefer_step() {
+                                improvement = true;
+                            }
                             best_cost = new_cost;
                             best_path = path.clone();
                             continue 'improvin;
@@ -139,7 +143,9 @@ pub fn swap<C: ImproveContext>(ctx: C) -> C::Path {
                         Some((i * path.len() + j) as f32 / ((path.len()) * path.len()) as f32),
                     );
                     best_cost = new_cost;
-                    improvement = true;
+                    if !ctx.prefer_step() {
+                        improvement = true;
+                    }
                     continue 'improvin;
                 } else {
                     path.as_mut().swap(i, j);
@@ -173,7 +179,9 @@ pub fn inner_rotate<C: ImproveContext>(ctx: C) -> C::Path {
                             ),
                         );
                         best_cost = new_cost;
-                        improvement = true;
+                        if !ctx.prefer_step() {
+                            improvement = true;
+                        }
                         continue 'improvin;
                     }
                     path.as_mut()[start..end].rotate_right(amount);
