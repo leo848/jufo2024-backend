@@ -24,21 +24,20 @@ Für die Nutzung von Word2Vec muss zudem eine binäre Modelldatei heruntergelade
     - Bei jedem Zwischenschritt wird das Ergebnis mitgeteilt
     - Zusätzliche Ausgabe der Aktionen des Algorithmus
 - Pfad erstellen
-    - Aus beliebiger Liste von Vektoren einen Hamilton-Pfad erstellen
+    - Aus beliebiger Liste von Vektoren oder einer Adjazenzmatrix einen Hamilton-Pfad erstellen
     - Algorithmen:
         - Zufällig
         - Reihenfolge
         - Brute Force
         - Nächster Nachbar
+        - Optimal Nearest Neighbor
         - Greedy
-        - Christofides (geplant)
-        - Concorde (geplant)
 - Pfad verbessern
     - Einen bestehenden Pfad verbessern
     - Algorithmen:
         - Rotieren
+        - Inner Rotate
         - Swap
         - 2-opt
         - 3-opt
         - Simulated Annealing
-        - Ameisenkolonie (geplant)
