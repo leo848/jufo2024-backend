@@ -12,7 +12,7 @@ use crate::{
     dist_path::{creation::DistPathCreation, improvement::DistPathImprovement},
     error::Error,
     graph, integer_sort, path,
-    path::{creation::PathCreation, improvement::PathImprovement},
+    path::{creation::PathCreation, improvement::PathImprovement}, DEBUG_WS,
 };
 
 #[derive(Deserialize, Debug, Clone, Copy)]
@@ -141,6 +141,7 @@ pub enum Action {
         metric: Metric,
         method: PathCreateMethod,
     },
+    #[serde(rename_all="camelCase")]
     ImproveDistPath {
         dimensions: u8,
         path: Vec<Vec<f32>>,
@@ -264,7 +265,9 @@ pub fn poll(event_hub: &EventHub, clients: &mut HashMap<u64, Responder>) -> (Res
                         error(client, Error::BinaryData);
                     }
                     Message::Text(string) => {
-                        // eprintln!("recv {}", string);
+                        if DEBUG_WS {
+                            eprintln!("RECV: {}", string);
+                        }
                         let result = serde_json::from_str(&string);
                         let result: Input = match result {
                             Ok(result) => result,
@@ -291,6 +294,9 @@ pub fn poll(event_hub: &EventHub, clients: &mut HashMap<u64, Responder>) -> (Res
 pub fn send(client: &Responder, message: impl Into<Output>) {
     autorestart::update();
     let string = serde_json::to_string(&message.into()).expect("Bug: could not serialize string");
+    if DEBUG_WS {
+        eprintln!("SEND: {}", &string);
+    }
     client.send(Message::Text(string));
 }
 

@@ -28,7 +28,13 @@ use crate::{
 };
 
 mod action;
+#[cfg(all(unix, debug_assertions))]
 mod autorestart;
+#[cfg(not(all(unix, debug_assertions)))]
+mod autorestart {
+    pub fn update() {}
+}
+
 mod dist_graph;
 mod dist_path;
 mod error;
@@ -40,6 +46,8 @@ mod util;
 mod word2vec;
 
 const PORT: u16 = 3141;
+
+const DEBUG_WS: bool = false;
 
 fn main() {
     println!("Loading model. This may take some time...");
