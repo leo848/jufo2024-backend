@@ -166,6 +166,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
             };
             let improved_path = method(ctx.clone());
 
+            ctx.action.send(DistPathImprovement::from_path(improved_path.clone()));
             ctx.action.send(DistPathImprovement::from_path(improved_path).done());
         }
         Action::CreatePath { matrix, method } => {
@@ -201,7 +202,8 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
             };
             let improved_path = method(ctx.clone());
 
-            ctx.action.send(PathImprovement::from_path(improved_path).done())
+            ctx.action.send(PathImprovement::from_path(improved_path.clone()));
+            ctx.action.send(PathImprovement::from_path(improved_path).done());
         }
     }
 }
