@@ -164,9 +164,9 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
                 graph: Graph::from_points(old_path.into_inner(), metric),
                 metric,
             };
-            let improved_path = method(ctx);
+            let improved_path = method(ctx.clone());
 
-            typed::send(client, DistPathImprovement::from_path(improved_path).done());
+            ctx.action.send(DistPathImprovement::from_path(improved_path).done());
         }
         Action::CreatePath { matrix, method } => {
             let method = method.implementation();
@@ -199,9 +199,9 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
                     latency,
                 },
             };
-            let improved_path = method(ctx);
+            let improved_path = method(ctx.clone());
 
-            typed::send(client, PathImprovement::from_path(improved_path).done())
+            ctx.action.send(PathImprovement::from_path(improved_path).done())
         }
     }
 }
