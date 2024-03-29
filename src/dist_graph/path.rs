@@ -4,9 +4,7 @@ use std::ops::Add;
 use itertools::Itertools;
 use serde::Serialize;
 
-use crate::{
-    dist_graph::{Edge, Point, Scalar},
-};
+use crate::dist_graph::{Edge, Point, Scalar};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Path(Vec<Point>);
