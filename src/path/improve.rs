@@ -201,13 +201,23 @@ pub fn simulated_annealing<C: ImproveContext>(ctx: C) -> C::Path {
     let mut cost = ctx.cost(&path);
     let mut path_approx = path.clone();
     let mut path_approx_cost = cost;
+    let mut improved_since_last_send = true;
 
     while temperature > 0.000000005 {
         if i % (1 << 24) == 0 {
-            ctx.send_path(
-                path_approx.iter(),
-                Some(1.0 - (temperature / initial_temp) as f32),
-            );
+            if improved_since_last_send {
+                ctx.send_path(
+                    path_approx.iter(),
+                    Some(1.0 - (temperature / initial_temp) as f32),
+                );
+            } else {
+                ctx.send_path_for_reactivity(
+                    path_approx.iter(),
+                    Some(1.0 - (temperature / initial_temp) as f32),
+                );
+
+            }
+            improved_since_last_send = false;
         }
         let index1 = fastrand::usize(..path.len());
         let index2 = fastrand::usize(..path.len());
@@ -227,6 +237,7 @@ pub fn simulated_annealing<C: ImproveContext>(ctx: C) -> C::Path {
         if new_cost < path_approx_cost {
             path.clone_into(&mut path_approx);
             path_approx_cost = new_cost;
+            improved_since_last_send = true;
         }
         temperature -= k;
         i += 1;

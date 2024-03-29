@@ -146,6 +146,7 @@ pub trait ImproveContext {
         self.dist_path(path.iter()).into()
     }
     fn send_path(&self, path: impl IntoIterator<Item = usize>, progress: Option<f32>);
+    fn send_path_for_reactivity(&self, path: impl IntoIterator<Item=usize>, progress: Option<f32>);
     fn path_from_indices(&self, path: impl IntoIterator<Item = usize>) -> Self::Path;
     fn prefer_step(&self) -> bool;
 }
@@ -168,6 +169,14 @@ impl ImproveContext for DistPathImproveContext {
 
     fn send_path(&self, path: impl IntoIterator<Item = usize>, progress: Option<f32>) {
         let mut dpc = DistPathImprovement::from_path(self.path_from_indices(path));
+        if let Some(p) = progress {
+            dpc = dpc.progress(p)
+        }
+        self.action.send(dpc);
+    }
+
+    fn send_path_for_reactivity(&self, path: impl IntoIterator<Item=usize>, progress: Option<f32>) {
+        let mut dpc = DistPathImprovement::from_path(self.path_from_indices(path)).not_better();
         if let Some(p) = progress {
             dpc = dpc.progress(p)
         }
@@ -209,6 +218,14 @@ impl ImproveContext for PathImproveContext {
 
     fn send_path(&self, path: impl IntoIterator<Item = usize>, progress: Option<f32>) {
         let mut pc = PathImprovement::from_path(graph::Path::new(path.into_iter().collect_vec()));
+        if let Some(p) = progress {
+            pc = pc.progress(p);
+        }
+        self.action.send(pc);
+    }
+
+    fn send_path_for_reactivity(&self, path: impl IntoIterator<Item=usize>, progress: Option<f32>) {
+        let mut pc = PathImprovement::from_path(graph::Path::new(path.into_iter().collect_vec())).not_better();
         if let Some(p) = progress {
             pc = pc.progress(p);
         }

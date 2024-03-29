@@ -36,6 +36,13 @@ impl DistPathImprovement {
             ..self
         }
     }
+
+    pub fn not_better(self) -> Self {
+        Self {
+            better: false,
+            ..self
+        }
+    }
 }
 
 impl IntoOutput for DistPathImprovement {
