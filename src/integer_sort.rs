@@ -40,11 +40,18 @@ impl SortedNumbers {
     }
 
     pub fn progress(self, progress: f32) -> Self {
-        Self { progress: Some(progress), ..self }
+        Self {
+            progress: Some(progress),
+            ..self
+        }
     }
 
     pub fn done(self) -> Self {
-        Self { done: true, progress: Some(1.0), ..self }
+        Self {
+            done: true,
+            progress: Some(1.0),
+            ..self
+        }
     }
 
     pub fn highlight(mut self, index: usize, highlight: Highlight) -> Self {
@@ -70,7 +77,7 @@ impl From<SortedNumbers> for Output {
             done,
             numbers,
             highlight,
-            progress
+            progress,
         } = value;
         Output::SortedNumbers {
             done,

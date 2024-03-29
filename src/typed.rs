@@ -12,7 +12,8 @@ use crate::{
     dist_path::{creation::DistPathCreation, improvement::DistPathImprovement},
     error::Error,
     graph, integer_sort, path,
-    path::{creation::PathCreation, improvement::PathImprovement}, DEBUG_WS,
+    path::{creation::PathCreation, improvement::PathImprovement},
+    DEBUG_WS,
 };
 
 #[derive(Deserialize, Debug, Clone, Copy)]
@@ -141,7 +142,7 @@ pub enum Action {
         metric: Metric,
         method: PathCreateMethod,
     },
-    #[serde(rename_all="camelCase")]
+    #[serde(rename_all = "camelCase")]
     ImproveDistPath {
         dimensions: u8,
         path: Vec<Vec<f32>>,

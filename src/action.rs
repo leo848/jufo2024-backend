@@ -47,6 +47,16 @@ pub struct IntegerSortContext {
     pub numbers: Vec<i64>,
 }
 
+impl IntegerSortContext {
+    pub fn len(&self) -> usize {
+        self.numbers.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+}
+
 #[derive(Clone)]
 pub struct DistPathCreateContext {
     pub action: ActionContext,
