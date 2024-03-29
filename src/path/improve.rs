@@ -1,10 +1,8 @@
-use itertools::Itertools;
-
 use super::ImproveContext;
 use crate::graph;
 
 pub fn rotate<C: ImproveContext>(ctx: C) -> C::Path {
-    let path = ctx.node_indices().collect_vec();
+    let path = ctx.start_path();
 
     let mut min_cost = f32::INFINITY;
     let mut min_i = 0;
@@ -19,12 +17,12 @@ pub fn rotate<C: ImproveContext>(ctx: C) -> C::Path {
         }
     }
 
-    if min_cost < ctx.dist_path(path.iter().copied()).into() {
+    if min_cost < ctx.dist_path(path.iter()).into() {
         let mut inner = path.clone();
         inner.rotate_left(min_i);
         ctx.path_from_indices(inner)
     } else {
-        ctx.path_from_indices(path)
+        ctx.path_from_indices(path.iter())
     }
 }
 
@@ -35,7 +33,7 @@ pub fn two_opt<C: ImproveContext>(ctx: C) -> C::Path {
     }
 
     let mut improvement = true;
-    let mut path = graph::Path::new(ctx.node_indices().collect());
+    let mut path = ctx.start_path();
     let mut best_cost = ctx.cost(&path);
 
     'improvin: while improvement {
