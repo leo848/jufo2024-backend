@@ -2,7 +2,7 @@ use super::ImproveContext;
 use crate::graph;
 
 pub fn rotate<C: ImproveContext>(ctx: C) -> C::Path {
-    let path = ctx.start_path();
+    let path = ctx.start_path().iter().collect::<Vec<_>>();
 
     let mut min_cost = f32::INFINITY;
     let mut min_i = 0;
@@ -17,12 +17,12 @@ pub fn rotate<C: ImproveContext>(ctx: C) -> C::Path {
         }
     }
 
-    if min_cost < ctx.dist_path(path.iter()).into() {
+    if min_cost < ctx.dist_path(path.iter().copied()).into() {
         let mut inner = path.clone();
         inner.rotate_left(min_i);
         ctx.path_from_indices(inner)
     } else {
-        ctx.path_from_indices(path.iter())
+        ctx.path_from_indices(path.iter().copied())
     }
 }
 

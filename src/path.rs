@@ -218,4 +218,8 @@ impl ImproveContext for PathImproveContext {
     fn prefer_step(&self) -> bool {
         self.prefer_step
     }
+
+    fn start_path(&self) -> graph::Path {
+        self.path.clone()
+    }
 }
