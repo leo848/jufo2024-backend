@@ -23,6 +23,8 @@ pub use selection::selection;
 #[derive(Debug, Clone, Serialize)]
 pub struct SortedNumbers {
     done: bool,
+    #[serde(default)]
+    progress: Option<f32>,
     numbers: Vec<i64>,
     highlight: HashMap<usize, Highlight>,
 }
@@ -31,13 +33,18 @@ impl SortedNumbers {
     pub fn new(numbers: &[i64]) -> Self {
         Self {
             numbers: numbers.to_owned(),
+            progress: None,
             done: false,
             highlight: Default::default(),
         }
     }
 
+    pub fn progress(self, progress: f32) -> Self {
+        Self { progress: Some(progress), ..self }
+    }
+
     pub fn done(self) -> Self {
-        Self { done: true, ..self }
+        Self { done: true, progress: Some(1.0), ..self }
     }
 
     pub fn highlight(mut self, index: usize, highlight: Highlight) -> Self {
@@ -63,11 +70,13 @@ impl From<SortedNumbers> for Output {
             done,
             numbers,
             highlight,
+            progress
         } = value;
         Output::SortedNumbers {
             done,
             numbers,
             highlight: highlight.into_iter().collect(),
+            progress,
         }
     }
 }

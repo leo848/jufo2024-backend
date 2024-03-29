@@ -217,6 +217,7 @@ pub enum Output {
         done: bool,
         numbers: Vec<i64>,
         highlight: Vec<(usize, Highlight)>,
+        progress: Option<f32>,
     },
     DistPathCreation(DistPathCreation),
     DistPathImprovement(DistPathImprovement),
