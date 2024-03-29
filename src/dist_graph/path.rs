@@ -5,8 +5,7 @@ use itertools::Itertools;
 use serde::Serialize;
 
 use crate::{
-    dist_graph::{Cost, Edge, Point, Scalar},
-    typed::Metric,
+    dist_graph::{Edge, Point, Scalar},
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -23,10 +22,6 @@ impl Path {
 
     pub fn into_inner(self) -> Vec<Point> {
         self.0
-    }
-
-    pub fn cost(&self, norm: Metric) -> Cost {
-        self.0.windows(2).map(|s| s[0].dist(&s[1], norm)).sum()
     }
 
     pub fn into_edges(self) -> Vec<Edge> {

@@ -48,11 +48,4 @@ impl Graph {
     pub fn weight(&self, index1: usize, index2: usize) -> Weight {
         Weight::new(self.mat[(index1, index2)])
     }
-
-    pub fn path_weight(&self, path: &Path) -> Weight {
-        path.iter()
-            .tuple_windows()
-            .map(|(ni1, ni2)| self.weight(ni1, ni2))
-            .sum()
-    }
 }

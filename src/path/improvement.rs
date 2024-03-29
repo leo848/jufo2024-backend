@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::{graph::Path, Output};
+use crate::{graph::Path, Output, typed::IntoOutput};
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -38,8 +38,8 @@ impl PathImprovement {
     }
 }
 
-impl From<PathImprovement> for Output {
-    fn from(value: PathImprovement) -> Self {
-        Output::PathImprovement(value)
+impl IntoOutput for PathImprovement {
+    fn into_output(self) -> Output {
+        Output::PathImprovement(self)
     }
 }

@@ -1,3 +1,4 @@
+use crate::typed::IntoOutput;
 use std::{
     sync::Mutex,
     thread,
@@ -10,7 +11,6 @@ use crate::{
     dist_graph,
     graph::{self, Graph},
     typed::{send, Metric},
-    Output,
 };
 
 static LAST_ACTION_SEND: Mutex<u128> = Mutex::new(0);
@@ -22,22 +22,24 @@ pub struct ActionContext {
 }
 
 impl ActionContext {
-    pub fn send(&self, message: impl Into<Output>) {
-        let current = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("Zeit rückwärts")
-            .as_millis();
-        let mut last_send_time = LAST_ACTION_SEND.lock().unwrap();
-        let duration_millis = (self.latency as u128).checked_sub(current - *last_send_time);
-        if let Some(sleep_time) = duration_millis {
-            thread::sleep(Duration::from_millis(sleep_time as u64));
+    pub fn send(&self, message: impl IntoOutput) {
+        if message.relevant_information() {
+            let current = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("Zeit rückwärts")
+                .as_millis();
+            let mut last_send_time = LAST_ACTION_SEND.lock().unwrap();
+            let duration_millis = (self.latency as u128).checked_sub(current - *last_send_time);
+            if let Some(sleep_time) = duration_millis {
+                thread::sleep(Duration::from_millis(sleep_time as u64));
+            }
+            let current = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("Zeit rückwärts")
+                .as_millis();
+            *last_send_time = current;
         }
-        let current = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("Zeit rückwärts")
-            .as_millis();
-        *last_send_time = current;
-        send(&self.client, message);
+        send(&self.client, message.into_output());
     }
 }
 

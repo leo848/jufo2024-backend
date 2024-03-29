@@ -1,3 +1,4 @@
+use crate::typed::IntoOutput;
 use serde::Serialize;
 
 use crate::{
@@ -48,8 +49,8 @@ impl PathCreation {
     }
 }
 
-impl From<PathCreation> for Output {
-    fn from(value: PathCreation) -> Self {
-        Output::PathCreation(value)
+impl IntoOutput for PathCreation {
+    fn into_output(self) -> Output {
+        Output::PathCreation(self)
     }
 }

@@ -238,6 +238,19 @@ pub enum Output {
     },
 }
 
+pub trait IntoOutput {
+    fn into_output(self) -> Output;
+    fn relevant_information(&self) -> bool {
+        true
+    }
+}
+
+impl<T> From<T> for Output where T: IntoOutput {
+    fn from(value: T) -> Self {
+        value.into_output()
+    }
+}
+
 /// Polls the event hub for a new event.
 /// On join, sends a welcome message and adds client to a list.
 /// On message, parses the message from JSON using Serde and returns the result.

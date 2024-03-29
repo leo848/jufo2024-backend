@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::{dist_graph::Path, Output};
+use crate::{dist_graph::Path, Output, typed::IntoOutput};
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -38,8 +38,8 @@ impl DistPathImprovement {
     }
 }
 
-impl From<DistPathImprovement> for Output {
-    fn from(value: DistPathImprovement) -> Self {
-        Output::DistPathImprovement(value)
+impl IntoOutput for DistPathImprovement {
+    fn into_output(self) -> Output {
+        Output::DistPathImprovement(self)
     }
 }

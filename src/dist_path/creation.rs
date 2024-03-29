@@ -2,7 +2,7 @@ use serde::Serialize;
 
 use crate::{
     dist_graph::{Edge, Path},
-    Output,
+    Output, typed::IntoOutput,
 };
 
 #[derive(Debug, Clone, Serialize)]
@@ -48,8 +48,8 @@ impl DistPathCreation {
     }
 }
 
-impl From<DistPathCreation> for Output {
-    fn from(value: DistPathCreation) -> Self {
-        Output::DistPathCreation(value)
+impl IntoOutput for DistPathCreation {
+    fn into_output(self) -> Output {
+        Output::DistPathCreation(self)
     }
 }

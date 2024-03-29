@@ -1,3 +1,4 @@
+use crate::typed::IntoOutput;
 use core::ops::Range;
 use std::collections::HashMap;
 
@@ -71,14 +72,14 @@ impl SortedNumbers {
     }
 }
 
-impl From<SortedNumbers> for Output {
-    fn from(value: SortedNumbers) -> Self {
-        let SortedNumbers {
+impl IntoOutput for SortedNumbers {
+    fn into_output(self) -> Output {
+        let Self {
             done,
             numbers,
             highlight,
             progress,
-        } = value;
+        } = self;
         Output::SortedNumbers {
             done,
             numbers,
