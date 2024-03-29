@@ -42,4 +42,8 @@ impl IntoOutput for DistPathImprovement {
     fn into_output(self) -> Output {
         Output::DistPathImprovement(self)
     }
+
+    fn relevant_information(&self) -> bool {
+        self.better
+    }
 }
