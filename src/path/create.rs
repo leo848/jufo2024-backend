@@ -10,6 +10,10 @@ use crate::{
     util::{factorial, UsableFloat},
 };
 
+mod ilp;
+
+pub use ilp::solve as ilp;
+
 pub fn transmute<C: CreateContext>(ctx: C) -> C::Path {
     ctx.path_from_indices(ctx.node_indices())
 }

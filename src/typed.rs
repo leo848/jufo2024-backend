@@ -47,6 +47,7 @@ pub enum PathCreateMethod {
     OptimalNearestNeighbor,
     BruteForce,
     Greedy,
+    Ilp,
 }
 
 impl PathCreateMethod {
@@ -59,6 +60,7 @@ impl PathCreateMethod {
             Self::OptimalNearestNeighbor => path::create::optimal_nearest_neighbor,
             Self::BruteForce => path::create::brute_force,
             Self::Greedy => path::create::greedy,
+            Self::Ilp => path::create::ilp,
         }
     }
 
@@ -71,6 +73,7 @@ impl PathCreateMethod {
             Self::OptimalNearestNeighbor => path::create::optimal_nearest_neighbor,
             Self::BruteForce => path::create::brute_force,
             Self::Greedy => path::create::greedy,
+            Self::Ilp => path::create::ilp,
         }
     }
 }
