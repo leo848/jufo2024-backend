@@ -16,12 +16,12 @@ mod weight;
 
 #[derive(Debug, Clone)]
 pub struct Graph {
-    mat: Matrix,
+    pub matrix: Matrix,
 }
 
 impl Graph {
     pub fn from_matrix(mat: Matrix) -> Self {
-        Graph { mat }
+        Graph { matrix: mat }
     }
 
     pub fn from_values(values: Vec<Vec<Scalar>>) -> Option<Self> {
@@ -42,10 +42,10 @@ impl Graph {
     }
 
     pub fn size(&self) -> usize {
-        self.mat.dim()
+        self.matrix.dim()
     }
 
     pub fn weight(&self, index1: usize, index2: usize) -> Weight {
-        Weight::new(self.mat[(index1, index2)])
+        Weight::new(self.matrix[(index1, index2)])
     }
 }

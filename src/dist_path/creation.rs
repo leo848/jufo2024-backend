@@ -2,7 +2,8 @@ use serde::Serialize;
 
 use crate::{
     dist_graph::{Edge, Path},
-    Output, typed::IntoOutput,
+    typed::IntoOutput,
+    Output,
 };
 
 #[derive(Debug, Clone, Serialize)]

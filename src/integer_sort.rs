@@ -1,11 +1,10 @@
-use crate::typed::IntoOutput;
 use core::ops::Range;
 use std::collections::HashMap;
 
 use serde::Serialize;
 
 use crate::{
-    typed::{Highlight, Highlight::Consider},
+    typed::{Highlight, Highlight::Consider, IntoOutput},
     Output,
 };
 

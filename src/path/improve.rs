@@ -215,7 +215,6 @@ pub fn simulated_annealing<C: ImproveContext>(ctx: C) -> C::Path {
                     path_approx.iter(),
                     Some(1.0 - (temperature / initial_temp) as f32),
                 );
-
             }
             improved_since_last_send = false;
         }

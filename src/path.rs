@@ -9,7 +9,8 @@ use itertools::Itertools;
 
 use crate::{
     action::{DistPathCreateContext, DistPathImproveContext, PathCreateContext},
-    dist_graph, graph,
+    dist_graph,
+    graph::{self, Graph, Matrix},
     path::{creation::PathCreation, improvement::PathImprovement},
     DistPathCreation, DistPathImprovement, PathImproveContext,
 };
@@ -31,6 +32,14 @@ pub trait CreateContext {
     }
     fn cost(&self, path: &graph::Path) -> f32 {
         self.dist_path(path.iter())
+    }
+    fn adjacency_matrix(&self) -> Matrix {
+        Matrix::new(
+            self.node_indices()
+                .map(|i| self.node_indices().map(|j| self.dist(i, j)).collect())
+                .collect(),
+        )
+        .expect("node_indices misbehaved")
     }
     fn send_path(&self, path: impl IntoIterator<Item = usize>, progress: Option<f32>);
     fn send_edges(&self, path: impl IntoIterator<Item = (usize, usize)>, progress: Option<f32>);
@@ -146,7 +155,11 @@ pub trait ImproveContext {
         self.dist_path(path.iter()).into()
     }
     fn send_path(&self, path: impl IntoIterator<Item = usize>, progress: Option<f32>);
-    fn send_path_for_reactivity(&self, path: impl IntoIterator<Item=usize>, progress: Option<f32>);
+    fn send_path_for_reactivity(
+        &self,
+        path: impl IntoIterator<Item = usize>,
+        progress: Option<f32>,
+    );
     fn path_from_indices(&self, path: impl IntoIterator<Item = usize>) -> Self::Path;
     fn prefer_step(&self) -> bool;
 }
@@ -175,7 +188,11 @@ impl ImproveContext for DistPathImproveContext {
         self.action.send(dpc);
     }
 
-    fn send_path_for_reactivity(&self, path: impl IntoIterator<Item=usize>, progress: Option<f32>) {
+    fn send_path_for_reactivity(
+        &self,
+        path: impl IntoIterator<Item = usize>,
+        progress: Option<f32>,
+    ) {
         let mut dpc = DistPathImprovement::from_path(self.path_from_indices(path)).not_better();
         if let Some(p) = progress {
             dpc = dpc.progress(p)
@@ -224,8 +241,13 @@ impl ImproveContext for PathImproveContext {
         self.action.send(pc);
     }
 
-    fn send_path_for_reactivity(&self, path: impl IntoIterator<Item=usize>, progress: Option<f32>) {
-        let mut pc = PathImprovement::from_path(graph::Path::new(path.into_iter().collect_vec())).not_better();
+    fn send_path_for_reactivity(
+        &self,
+        path: impl IntoIterator<Item = usize>,
+        progress: Option<f32>,
+    ) {
+        let mut pc = PathImprovement::from_path(graph::Path::new(path.into_iter().collect_vec()))
+            .not_better();
         if let Some(p) = progress {
             pc = pc.progress(p);
         }

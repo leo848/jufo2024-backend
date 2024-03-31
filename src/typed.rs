@@ -248,7 +248,10 @@ pub trait IntoOutput {
     }
 }
 
-impl<T> From<T> for Output where T: IntoOutput {
+impl<T> From<T> for Output
+where
+    T: IntoOutput,
+{
     fn from(value: T) -> Self {
         value.into_output()
     }

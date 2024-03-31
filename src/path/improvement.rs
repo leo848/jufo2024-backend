@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::{graph::Path, Output, typed::IntoOutput};
+use crate::{graph::Path, typed::IntoOutput, Output};
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]

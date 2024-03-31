@@ -1,8 +1,8 @@
-use crate::typed::IntoOutput;
 use serde::Serialize;
 
 use crate::{
     graph::{Edge, Path},
+    typed::IntoOutput,
     Output,
 };
 
