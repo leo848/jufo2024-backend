@@ -163,7 +163,7 @@ pub fn inner_rotate<C: ImproveContext>(ctx: C) -> C::Path {
     'improvin: while improvement {
         improvement = false;
         for start in 0..path.len() {
-            ctx.send_path(path.iter(), Some(start as f32 / path.len() as f32));
+            ctx.send_path_for_reactivity(path.iter(), Some(start as f32 / path.len() as f32));
             for end in start + 1..path.len() {
                 for amount in 1..end - start {
                     path.as_mut()[start..end].rotate_left(amount);
