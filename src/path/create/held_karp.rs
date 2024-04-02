@@ -19,7 +19,6 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
 
     assert!(size < 32);
 
-    ctx.send_edges(empty(), Some(0.0));
     let mut dp_memo: Box<[Box<[f32]>]> =
         vec![vec![f32::INFINITY; size].into_boxed_slice(); 1 << size].into_boxed_slice();
 

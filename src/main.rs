@@ -6,6 +6,7 @@
 
 use std::{
     collections::HashMap,
+    iter,
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -15,7 +16,7 @@ use action::{
 };
 use graph::Graph;
 use itertools::Itertools;
-use path::improvement::PathImprovement;
+use path::{improvement::PathImprovement, CreateContext};
 use simple_websockets::Responder;
 use typed::{Action, Output};
 
@@ -139,6 +140,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
                 graph: Graph::from_points(points, metric),
                 metric,
             };
+            ctx.send_edges(iter::empty(), Some(0.0));
             let path = method(ctx);
 
             typed::send(client, DistPathCreation::done(path));
@@ -181,6 +183,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
                     latency,
                 },
             };
+            ctx.send_edges(iter::empty(), Some(0.0));
             let path = method(ctx);
             typed::send(client, PathCreation::done(path));
         }
