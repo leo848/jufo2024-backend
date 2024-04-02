@@ -52,6 +52,10 @@ impl Path {
     pub fn swap(&mut self, i: usize, j: usize) {
         self.0.swap(i, j);
     }
+
+    pub fn insert(&mut self, index: usize, elem: usize) {
+        self.0.insert(index, elem)
+    }
 }
 
 impl Add<&Path> for Path {

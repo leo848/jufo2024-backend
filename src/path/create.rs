@@ -29,26 +29,6 @@ pub fn random<C: CreateContext>(ctx: C) -> C::Path {
     ctx.path_from_indices(path)
 }
 
-pub fn nearest_neighbor<C: CreateContext>(ctx: C) -> C::Path {
-    let mut visited = HashSet::new();
-    let mut path = graph::Path::new(vec![0]);
-    while path.len() != ctx.len() {
-        let last = path[path.len() - 1];
-        visited.insert(last.clone());
-
-        let min = ctx
-            .node_indices()
-            .filter(|&ni| Not::not(visited.contains(&ni)))
-            .min_by_key(|&ni| ctx.dist(last, ni).usable())
-            .expect("point was empty even though path is not full");
-
-        path.push(min.clone());
-        ctx.send_path(path.iter(), Some(path.len() as f32 / ctx.len() as f32));
-    }
-
-    ctx.path_from_indices(path.iter())
-}
-
 pub fn optimal_nearest_neighbor<C: CreateContext>(ctx: C) -> C::Path {
     let mut best_path: Option<graph::Path> = None;
 
@@ -115,6 +95,26 @@ pub fn brute_force<C: CreateContext>(ctx: C) -> C::Path {
     ctx.path_from_indices(min_permutation)
 }
 
+pub fn nearest_neighbor<C: CreateContext>(ctx: C) -> C::Path {
+    let mut visited = HashSet::new();
+    let mut path = graph::Path::new(vec![0]);
+    while path.len() != ctx.len() {
+        let last = path[path.len() - 1];
+        visited.insert(last.clone());
+
+        let min = ctx
+            .node_indices()
+            .filter(|&ni| Not::not(visited.contains(&ni)))
+            .min_by_key(|&ni| ctx.dist(last, ni).usable())
+            .expect("point was empty even though path is not full");
+
+        path.push(min.clone());
+        ctx.send_path(path.iter(), Some(path.len() as f32 / ctx.len() as f32));
+    }
+
+    ctx.path_from_indices(path.iter())
+}
+
 pub fn greedy<C: CreateContext>(ctx: C) -> C::Path {
     let mut sorted_edge_iterator = ctx
         .node_indices()
@@ -167,6 +167,42 @@ pub fn greedy<C: CreateContext>(ctx: C) -> C::Path {
     }
 
     assert_eq!(ctx.len(), path.len());
+
+    ctx.path_from_indices(path.iter())
+}
+
+pub fn insertion<C: CreateContext>(ctx: C) -> C::Path {
+    let mut visited = HashSet::new();
+    let mut path = graph::Path::new(vec![0]);
+    while path.len() != ctx.len() {
+        let mut min_cost_delta = f32::INFINITY;
+        let mut min_action = None;
+        for new_vertex in ctx
+            .node_indices()
+            .filter(|&ni| Not::not(visited.contains(&ni)))
+        {
+            for i in 0..=path.len() {
+                let cost_delta = if i == 0 {
+                    ctx.dist(new_vertex, 0)
+                } else if i == path.len() {
+                    ctx.dist(path[path.len() - 1], new_vertex)
+                } else {
+                    ctx.dist(path[i - 1], new_vertex) + ctx.dist(new_vertex, path[i])
+                        - ctx.dist(path[i - 1], path[i])
+                };
+                if cost_delta < min_cost_delta {
+                    min_cost_delta = cost_delta;
+                    min_action = Some((i, new_vertex));
+                }
+            }
+        }
+        let Some((i, new_vertex)) = min_action else {
+            panic!("invalid configuration");
+        };
+        path.insert(i, new_vertex);
+        visited.insert(new_vertex);
+        ctx.send_path(path.iter(), Some(path.len() as f32 / ctx.len() as f32));
+    }
 
     ctx.path_from_indices(path.iter())
 }

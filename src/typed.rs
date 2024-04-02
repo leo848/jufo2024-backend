@@ -49,6 +49,7 @@ pub enum PathCreateMethod {
     Greedy,
     HeldKarp,
     Ilp,
+    Insertion,
 }
 
 impl PathCreateMethod {
@@ -63,6 +64,7 @@ impl PathCreateMethod {
             Self::Greedy => path::create::greedy,
             Self::Ilp => path::create::ilp,
             Self::HeldKarp => path::create::held_karp,
+            Self::Insertion => path::create::insertion,
         }
     }
 
@@ -77,6 +79,7 @@ impl PathCreateMethod {
             Self::Greedy => path::create::greedy,
             Self::Ilp => path::create::ilp,
             Self::HeldKarp => path::create::held_karp,
+            Self::Insertion => path::create::insertion,
         }
     }
 }
