@@ -48,4 +48,10 @@ impl Graph {
     pub fn weight(&self, index1: usize, index2: usize) -> Weight {
         Weight::new(self.matrix[(index1, index2)])
     }
+
+    pub fn rotate_left(self, index: usize) -> Self {
+        Self {
+            matrix: self.matrix.rotate_left(index),
+        }
+    }
 }

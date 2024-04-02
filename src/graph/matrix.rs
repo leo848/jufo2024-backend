@@ -41,6 +41,14 @@ impl Matrix {
     pub fn into_inner(self) -> Vec<Vec<Scalar>> {
         self.values
     }
+
+    pub fn rotate_left(mut self, index: usize) -> Self {
+        self.values.rotate_left(index);
+        for row in &mut self.values {
+            row.rotate_left(index);
+        }
+        self
+    }
 }
 
 impl Index<(usize, usize)> for Matrix {

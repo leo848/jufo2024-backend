@@ -10,14 +10,14 @@ use itertools::Itertools;
 use crate::{
     action::{DistPathCreateContext, DistPathImproveContext, PathCreateContext},
     dist_graph,
-    graph::{self, Matrix},
+    graph::{self, Graph, Matrix},
     path::{creation::PathCreation, improvement::PathImprovement},
     DistPathCreation, DistPathImprovement, PathImproveContext,
 };
 
 const PESSIMAL: bool = false;
 
-pub trait CreateContext {
+pub trait CreateContext: Clone {
     type Path;
     fn len(&self) -> usize;
     fn node_indices(&self) -> Range<usize> {
@@ -44,6 +44,9 @@ pub trait CreateContext {
     fn send_path(&self, path: impl IntoIterator<Item = usize>, progress: Option<f32>);
     fn send_edges(&self, path: impl IntoIterator<Item = (usize, usize)>, progress: Option<f32>);
     fn path_from_indices(&self, path: impl IntoIterator<Item = usize>) -> Self::Path;
+    fn rotate_left(self, index: usize) -> Self
+    where
+        Self: Sized;
 }
 
 impl CreateContext for DistPathCreateContext {
@@ -92,6 +95,27 @@ impl CreateContext for DistPathCreateContext {
         }
         self.action.send(dpc);
     }
+
+    fn rotate_left(self, index: usize) -> Self
+    where
+        Self: Sized,
+    {
+        let Self {
+            action,
+            dim,
+            mut points,
+            graph: _,
+            metric,
+        } = self;
+        points.rotate_left(index);
+        Self {
+            action,
+            dim,
+            points: points.clone(),
+            graph: Graph::from_points(points, metric),
+            metric,
+        }
+    }
 }
 
 impl CreateContext for PathCreateContext {
@@ -132,6 +156,17 @@ impl CreateContext for PathCreateContext {
             pc = pc.progress(p)
         }
         self.action.send(pc);
+    }
+
+    fn rotate_left(self, index: usize) -> Self
+    where
+        Self: Sized,
+    {
+        let Self { action, graph } = self;
+        Self {
+            action,
+            graph: graph.rotate_left(index),
+        }
     }
 }
 
