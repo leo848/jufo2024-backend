@@ -1,3 +1,5 @@
+use std::iter::empty;
+
 use crate::dist_graph::Point;
 use crate::graph::Path;
 use crate::path::{CreateContext, Matrix};
@@ -17,6 +19,9 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
     dp_memo[0][1] = 0.0;
 
     for mask in 1..1 << size {
+        if mask & (1 << (size.saturating_sub(4))) == 0 {
+            ctx.send_edges(empty(), Some(mask as f32 / (1 << size) as f32));
+        }
         for last_node in 0..size {
             if (mask & (1 << last_node)) == 0 {
                 continue;
