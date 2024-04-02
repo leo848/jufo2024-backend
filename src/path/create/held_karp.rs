@@ -17,8 +17,9 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
 
     assert!(size < 32);
 
+    ctx.send_edges(empty(), Some(0.0));
     let mut dp_memo: Box<[Box<[f32]>]> =
-        vec![vec![f32::INFINITY; 1 << size].into_boxed_slice(); size].into_boxed_slice();
+        vec![vec![f32::INFINITY; size].into_boxed_slice(); 1 << size].into_boxed_slice();
     dp_memo[0][1] = 0.0;
 
     for mask in 1..1 << size {
@@ -30,12 +31,12 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
                 continue;
             }
             for next_node in 0..size {
-                if mask & 1 << next_node != 0 {
+                if (mask & (1 << next_node)) != 0 {
                     continue;
                 }
-                dp_memo[next_node][mask | (1 << next_node)] = f32::min(
-                    dp_memo[next_node][mask | (1 << next_node)],
-                    dp_memo[last_node][mask] + matrix[(last_node, next_node)],
+                dp_memo[mask | (1 << next_node)][next_node] = f32::min(
+                    dp_memo[mask | (1 << next_node)][next_node],
+                    dp_memo[mask][last_node] + matrix[(last_node, next_node)],
                 )
             }
         }
