@@ -1,5 +1,7 @@
 use std::iter::empty;
 
+use itertools::Itertools;
+
 use crate::dist_graph::Point;
 use crate::graph::Path;
 use crate::path::{CreateContext, Matrix};
@@ -21,7 +23,7 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
 
     for mask in 1..1 << size {
         if mask & ((1 << (size.saturating_sub(5))) - 1) == 0 {
-            ctx.send_edges(empty(), Some(mask as f32 / (1 << size) as f32));
+            ctx.send_edges(empty(), Some(0.9 * mask as f32 / (1 << size) as f32));
         }
         for last_node in 0..size {
             if (mask & (1 << last_node)) == 0 {
@@ -41,34 +43,49 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
 
     let mut min_chain_length = f32::INFINITY;
     let mut last_node = 0;
-    for i in 0..size {
-        let chain_length = dp_memo[i][(1 << size) - 1];
-        if chain_length < min_chain_length {
-            min_chain_length = chain_length;
-            last_node = i;
-        }
-    }
+    let mut best_path = vec![];
+    let mut best_chain_length = f32::INFINITY;
 
-    let mut path = vec![0; size];
-    let mut mask = (1 << size) - 1;
-    path[size - 1] = last_node;
+    for last_node in 0..size {
+        // let chain_length = dp_memo[i][(1 << size) - 1];
+        // if chain_length < min_chain_length {
+        //     min_chain_length = chain_length;
+        //     last_node = i;
+        // }
+        let mut path = vec![0; size];
+        let mut mask = (1 << size) - 1;
+        path[size - 1] = last_node;
 
-    for i in (0..size - 1).rev() {
-        let mut next_node = 0;
-        let mut min_chain_length = f32::INFINITY;
-        for j in 0..size {
-            if j != last_node && (mask & (1 << j)) != 0 {
-                let cost = dp_memo[j][mask] + matrix[(j, last_node)];
-                if cost < min_chain_length {
-                    min_chain_length = cost;
-                    next_node = j;
+        let mut new_last_node = last_node;
+        for i in (0..size - 1).rev() {
+            let mut next_node = 0;
+            let mut min_chain_length = f32::INFINITY;
+            for j in 0..size {
+                if j != new_last_node && (mask & (1 << j)) != 0 {
+                    let cost = dp_memo[j][mask] + matrix[(j, new_last_node)];
+                    if cost < min_chain_length {
+                        min_chain_length = cost;
+                        next_node = j;
+                    }
                 }
             }
+            path[i] = next_node;
+            mask &= !(1 << new_last_node);
+            new_last_node = next_node;
         }
-        path[i] = next_node;
-        mask &= !(1 << last_node);
-        last_node = next_node;
+
+        if path.iter().all_unique() {
+            let path_chain_length = ctx.dist_path(path.iter().copied());
+            ctx.send_path(
+                path.iter().copied(),
+                Some(0.9 + last_node as f32 / size as f32 * 0.1),
+            );
+            if path_chain_length < best_chain_length {
+                best_chain_length = path_chain_length;
+                best_path = path.clone();
+            }
+        }
     }
 
-    ctx.path_from_indices(path.iter().copied())
+    ctx.path_from_indices(best_path)
 }
