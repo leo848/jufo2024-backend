@@ -10,6 +10,7 @@ use crate::{
     util::{factorial, UsableFloat},
 };
 
+#[allow(unused)]
 mod ilp;
 
 pub use ilp::solve as ilp;

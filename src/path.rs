@@ -10,7 +10,7 @@ use itertools::Itertools;
 use crate::{
     action::{DistPathCreateContext, DistPathImproveContext, PathCreateContext},
     dist_graph,
-    graph::{self, Graph, Matrix},
+    graph::{self, Matrix},
     path::{creation::PathCreation, improvement::PathImprovement},
     DistPathCreation, DistPathImprovement, PathImproveContext,
 };
