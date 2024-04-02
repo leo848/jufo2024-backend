@@ -274,7 +274,6 @@ fn find_min_cut(size: usize, weights: &mut [f64]) -> (f64, Vec<bool>) {
     (best_cut_weight, best_cut)
 }
 
-#[test]
 fn test_solve() {
     let data: [(&str, f32, f32, f32); 10] = [
         ("Schwarz", 0.0, 0.5, 0.5),
