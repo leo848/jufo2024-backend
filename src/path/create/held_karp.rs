@@ -34,7 +34,7 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
                 ctx.send_path(
                     global_best_path.iter().flatten().copied(),
                     Some(
-                        (mask as f32 / (1 << size) as f32) / local_ctx.len() as f32
+                        ((mask / (1 << size)) as f32) / local_ctx.len() as f32
                             + (start_point as f32 / local_ctx.len() as f32),
                     ),
                 );
@@ -110,7 +110,7 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
                 .expect("just set the value")
                 .iter()
                 .copied(),
-            Some(start_point as f32 / local_ctx.len() as f32),
+            Some(start_point as f32 / ctx.len() as f32),
         );
     }
 
