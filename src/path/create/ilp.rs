@@ -19,7 +19,7 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
 
 #[cfg(test)]
 #[allow(unused)]
-pub fn solve_simple(matrix: Matrix, names: &[String]) -> Path {
+fn solve_simple(matrix: Matrix, names: &[String]) -> Path {
     use std::{array, iter};
 
     use bimap::BiMap;
