@@ -20,7 +20,10 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
     ctx.send_edges(empty(), Some(0.0));
     let mut dp_memo: Box<[Box<[f32]>]> =
         vec![vec![f32::INFINITY; size].into_boxed_slice(); 1 << size].into_boxed_slice();
-    dp_memo[0][1] = 0.0;
+
+    for i in 0..size {
+        dp_memo[1 << i][i] = 0.0;
+    }
 
     for mask in 1..1 << size {
         if mask & ((1 << (size.saturating_sub(5))) - 1) == 0 {
@@ -63,7 +66,7 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
             let mut min_chain_length = f32::INFINITY;
             for j in 0..size {
                 if j != new_last_node && (mask & (1 << j)) != 0 {
-                    let cost = dp_memo[j][mask] + matrix[(j, new_last_node)];
+                    let cost = dp_memo[mask][j] + matrix[(j, new_last_node)];
                     if cost < min_chain_length {
                         min_chain_length = cost;
                         next_node = j;
