@@ -15,11 +15,12 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
 
     assert!(size < 32);
 
-    let mut dp_memo: Vec<Vec<f32>> = vec![vec![f32::INFINITY; 1 << size]; size];
+    let mut dp_memo: Box<[Box<[f32]>]> =
+        vec![vec![f32::INFINITY; 1 << size].into_boxed_slice(); size].into_boxed_slice();
     dp_memo[0][1] = 0.0;
 
     for mask in 1..1 << size {
-        if mask & (1 << (size.saturating_sub(4))) == 0 {
+        if mask & ((1 << (size.saturating_sub(5))) - 1) == 0 {
             ctx.send_edges(empty(), Some(mask as f32 / (1 << size) as f32));
         }
         for last_node in 0..size {
