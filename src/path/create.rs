@@ -172,7 +172,7 @@ pub fn greedy<C: CreateContext>(ctx: C) -> C::Path {
 }
 
 pub fn insertion<C: CreateContext>(ctx: C) -> C::Path {
-    let mut visited = HashSet::new();
+    let mut visited = HashSet::from([0]);
     let mut path = graph::Path::new(vec![0]);
     while path.len() != ctx.len() {
         let mut min_cost_delta = f32::INFINITY;
@@ -202,6 +202,7 @@ pub fn insertion<C: CreateContext>(ctx: C) -> C::Path {
         path.insert(i, new_vertex);
         visited.insert(new_vertex);
         ctx.send_path(path.iter(), Some(path.len() as f32 / ctx.len() as f32));
+        dbg!(&path);
     }
 
     ctx.path_from_indices(path.iter())
