@@ -5,86 +5,64 @@ use crate::typed::Metric;
 use crate::Graph;
 
 pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
-    let matrix: Matrix = ctx.adjacency_matrix();
+    use std::collections::{HashMap, HashSet};
 
-    dbg!(matrix);
+    let matrix = ctx.adjacency_matrix();
 
-    todo!()
-}
+    let size = matrix.dim();
 
-#[cfg(test)]
-#[allow(unused)]
-fn solve_simple(matrix: Matrix, names: &[String]) -> Path {
-    todo!();
-}
+    assert!(size < 32);
 
-#[test]
-fn test_solve() {
-    let data: [(&str, f32, f32, f32); 10] = [
-        ("Schwarz", 0.0, 0.5, 0.5),
-        (
-            "Signalweiß",
-            0.961151360371199,
-            0.50000000009726,
-            0.5000000447823341,
-        ),
-        (
-            "Verkehrsrot",
-            0.5346730535533166,
-            0.7340950690306774,
-            0.6290678476561004,
-        ),
-        (
-            "Lachs",
-            0.7882608186750829,
-            0.6380500410338976,
-            0.5663067939264064,
-        ),
-        (
-            "Zartes Puder",
-            0.7582906300295726,
-            0.5122111542103134,
-            0.5093382344908048,
-        ),
-        (
-            "Luftschloss",
-            0.8408536088971593,
-            0.42016124595739973,
-            0.43023374658457403,
-        ),
-        (
-            "Nilblau",
-            0.375673715958732,
-            0.47583421184458446,
-            0.2646716029139586,
-        ),
-        (
-            "Pflaume",
-            0.809408742435091,
-            0.5926152589519652,
-            0.44128616905899143,
-        ),
-        (
-            "Mittleres Violettrot",
-            0.5990910068501093,
-            0.7090670259721504,
-            0.4296126049311067,
-        ),
-        (
-            "Leuchtendes Rosa",
-            0.7158785829249797,
-            0.7615687324845466,
-            0.45727066011132506,
-        ),
-    ];
-    let points: Vec<Point> = data.map(|(_, r, g, b)| Point::new(vec![r, g, b])).into();
-    let metric = Metric {
-        norm: crate::typed::Norm::Euclidean,
-        invert: false,
-    };
-    let matrix = Graph::from_points(points, metric).matrix;
-    let names = data.map(|(name, ..)| name.to_owned());
+    let mut dp_memo: Vec<Vec<f32>> = vec![vec![f32::INFINITY; 1 << size]; size];
+    dp_memo[0][1] = 0.0;
 
-    let path = solve_simple(matrix, &names);
-    // dbg!(path);
+    for mask in 1..1 << size {
+        for last_node in 0..size {
+            if (mask & (1 << last_node)) == 0 {
+                continue;
+            }
+            for next_node in 0..size {
+                if mask & 1 << next_node != 0 {
+                    continue;
+                }
+                dp_memo[next_node][mask | (1 << next_node)] = f32::min(
+                    dp_memo[next_node][mask | (1 << next_node)],
+                    dp_memo[last_node][mask] + matrix[(last_node, next_node)],
+                )
+            }
+        }
+    }
+
+    let mut min_chain_length = f32::INFINITY;
+    let mut last_node = 0;
+    for i in 0..size {
+        let chain_length = dp_memo[i][(1 << size) - 1];
+        if chain_length < min_chain_length {
+            min_chain_length = chain_length;
+            last_node = i;
+        }
+    }
+
+    let mut path = vec![0; size];
+    let mut mask = (1 << size) - 1;
+    path[size - 1] = last_node;
+
+    for i in (1..size).rev() {
+        let mut next_node = 0;
+        let mut min_chain_length = f32::INFINITY;
+        for j in 0..size {
+            if j != last_node && (mask & (1 << j)) != 0 {
+                let cost = dp_memo[j][mask] + matrix[(j, last_node)];
+                if cost < min_chain_length {
+                    min_chain_length = cost;
+                    next_node = j;
+                }
+            }
+        }
+        path[i - 1] = next_node;
+        mask &= !(1 << last_node);
+        last_node = next_node;
+    }
+
+    ctx.path_from_indices(path.iter().copied())
 }
