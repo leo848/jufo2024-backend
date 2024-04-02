@@ -53,7 +53,7 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
     let mut mask = (1 << size) - 1;
     path[size - 1] = last_node;
 
-    for i in (1..size).rev() {
+    for i in (0..size - 1).rev() {
         let mut next_node = 0;
         let mut min_chain_length = f32::INFINITY;
         for j in 0..size {
@@ -65,7 +65,7 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
                 }
             }
         }
-        path[i - 1] = next_node;
+        path[i] = next_node;
         mask &= !(1 << last_node);
         last_node = next_node;
     }
