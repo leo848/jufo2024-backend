@@ -2,18 +2,20 @@ use std::iter::empty;
 
 use itertools::Itertools;
 
-use crate::dist_graph::Point;
-use crate::graph::Path;
-use crate::path::{CreateContext, Matrix};
-use crate::typed::Metric;
-use crate::Graph;
+use crate::{
+    dist_graph::Point,
+    graph::Path,
+    path::{CreateContext, Matrix},
+    typed::Metric,
+    Graph,
+};
 
 pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
     use std::collections::{HashMap, HashSet};
 
     let matrix = ctx.adjacency_matrix();
 
-    let size = matrix.dim();
+    let size = ctx.len();
 
     assert!(size < 32);
 
