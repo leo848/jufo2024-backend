@@ -202,7 +202,6 @@ pub fn insertion<C: CreateContext>(ctx: C) -> C::Path {
         path.insert(i, new_vertex);
         visited.insert(new_vertex);
         ctx.send_path(path.iter(), Some(path.len() as f32 / ctx.len() as f32));
-        dbg!(&path);
     }
 
     ctx.path_from_indices(path.iter())
