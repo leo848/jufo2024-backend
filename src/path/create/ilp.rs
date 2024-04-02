@@ -1,7 +1,6 @@
 use itertools::Itertools;
 use minilp::{LinearExpr, Solution, Variable};
 
-#[cfg(test)]
 use crate::{
     dist_graph::Point,
     graph::{Graph, Path},
@@ -17,7 +16,6 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
     todo!()
 }
 
-#[cfg(test)]
 #[allow(unused)]
 fn solve_simple(matrix: Matrix, names: &[String]) -> Path {
     use std::{array, iter};
