@@ -289,63 +289,72 @@ pub fn solve2<C: CreateContext>(ctx: C) -> C::Path {
 
     assert!(n < 32);
 
-    let dist = ctx.adjacency_matrix();
+    let mut global_best_path = None;
+    let mut global_best_chain_len = f32::INFINITY;
 
-    let mut cache: HeldKarpDpCache = HeldKarpDpCache::new(n);
+    for start_point in 0..n {
+        let dist = ctx.adjacency_matrix();
 
-    for k in 1..n {
-        cache.set(MaskSet::from_k(k), k, dist[(0, k)], k as u8);
-    }
+        let mut cache: HeldKarpDpCache = HeldKarpDpCache::new(n);
 
-    for subset_size in 2..n {
-        for subset in MaskSet::subsets_sized(1..n, subset_size) {
-            for k in subset {
-                let mut minimum = f32::INFINITY;
-                let mut min_prev = 204; // Sentinelwert: 204 = 0xCC
-                for m in subset {
-                    if m == 0 || m == k {
-                        continue;
+        for k in 1..n {
+            cache.set(MaskSet::from_k(k), k, dist[(0, k)], k as u8);
+        }
+
+        for subset_size in 2..n {
+            for subset in MaskSet::subsets_sized(1..n, subset_size) {
+                for k in subset {
+                    let mut minimum = f32::INFINITY;
+                    let mut min_prev = 204; // Sentinelwert: 204 = 0xCC
+                    for m in subset {
+                        if m == 0 || m == k {
+                            continue;
+                        }
+                        let value = cache.c(subset.without(k), m) + dist[(m, k)];
+                        if value <= minimum {
+                            minimum = value;
+                            min_prev = m;
+                        }
                     }
-                    let value = cache.c(subset.without(k), m) + dist[(m, k)];
-                    if value <= minimum {
-                        minimum = value;
-                        min_prev = m;
-                    }
+
+                    cache.set(subset, k, minimum, min_prev as u8);
                 }
-
-                cache.set(subset, k, minimum, min_prev as u8);
             }
         }
-    }
 
-    let mut minimum_chain_len = f32::INFINITY;
-    let mut parent = 0;
-    for k in 1..n {
-        let chain_len_k = cache.c(MaskSet::from_range(1..n), k);
-        dbg!(chain_len_k);
-        if chain_len_k < minimum_chain_len {
-            minimum_chain_len = chain_len_k;
-            parent = k;
-            cache.set(MaskSet::from_range(1..n), 0, minimum_chain_len, k as u8);
+        let mut minimum_chain_len = f32::INFINITY;
+        let mut parent = 0;
+        for k in 1..n {
+            let chain_len_k = cache.c(MaskSet::from_range(1..n), k);
+            if chain_len_k < minimum_chain_len {
+                minimum_chain_len = chain_len_k;
+                parent = k;
+                cache.set(MaskSet::from_range(1..n), 0, minimum_chain_len, k as u8);
+            }
+        }
+
+        if minimum_chain_len < global_best_chain_len {
+            global_best_chain_len = minimum_chain_len;
+
+            let mut path = Vec::new();
+            let mut bits = MaskSet::from_range(1..n);
+
+            for _ in 0..n - 1 {
+                path.push(parent);
+                let new_bits = bits.without(parent);
+                parent = cache.p(bits, parent).into();
+                bits = new_bits;
+            }
+
+            path.push(0);
+
+            let path = path.into_iter().rev().collect_vec();
+            global_best_path = Some(path);
         }
     }
 
-    dbg!(n);
-    dbg!(minimum_chain_len);
-
-    let mut path = Vec::new();
-    let mut bits = MaskSet::from_range(1..n);
-
-    for _ in 0..n - 1 {
-        dbg!(parent, bits);
-        path.push(parent);
-        parent = cache.p(bits, parent).into();
-        bits = bits.without(parent);
+    match global_best_path {
+        Some(path) => ctx.path_from_indices(path.iter().copied()),
+        None => panic!("No path"),
     }
-
-    dbg!(&path);
-
-    let path = path.into_iter().rev();
-
-    ctx.path_from_indices(path)
 }
