@@ -175,7 +175,7 @@ impl HeldKarpDpCache {
     }
 }
 
-pub fn solve2<C: CreateContext>(ctx: C) -> C::Path {
+pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
     use std::collections::{HashMap, HashSet};
 
     let n = ctx.len();
