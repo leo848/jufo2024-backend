@@ -178,66 +178,92 @@ impl HeldKarpDpCache {
 pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
     use std::collections::{HashMap, HashSet};
 
-    let n = ctx.len();
+    let size = ctx.len();
 
-    assert!(n < 32);
+    assert!(size < 32);
 
     let mut global_best_path = None;
     let mut global_best_chain_len = f32::INFINITY;
 
-    for start_point in 0..n {
+    // Der original Held-Karp-Algorithmus für TSP muss nicht für jeden Startpunkt neu ausgeführt
+    // werden; um den kürzesten Hamilton-Pfad zu ermitteln, muss dies schon geschehen, da über die
+    // dynamische Programmierung nur der kürzeste Pfad von einem Punkt aus ermittelt werden kann.
+    //
+    // Daher steigt die Komplexität von O(n ** 2 * 2 ** n) auf O(n ** 3 * 2 ** n).
+    for start_point in 0..size {
         let local_ctx = ctx.clone().rotate_left(start_point);
 
         let dist = local_ctx.adjacency_matrix();
 
-        let mut cache: HeldKarpDpCache = HeldKarpDpCache::new(n);
+        let mut dp_table: HeldKarpDpCache = HeldKarpDpCache::new(size);
 
-        for k in 1..n {
-            cache.set(MaskSet::from_k(k), k, dist[(0, k)], k as u8);
+        // Um von 0 nur über k nach k zu kommen, wird die Kante von 0 nach k betrachtet.
+        for k in 1..size {
+            dp_table.set(MaskSet::from_k(k), k, dist[(0, k)], k as u8);
         }
 
-        for subset_size in 2..n {
-            for subset in MaskSet::subsets_sized(1..n, subset_size) {
+        // Für jede Teilmenge, gruppiert nach Kardinalität:
+        for subset_size in 2..size {
+            for subset in MaskSet::subsets_sized(1..size, subset_size) {
+                // Für jeden Knoten k, der besucht wurde:
                 for k in subset {
                     let mut minimum = f32::INFINITY;
                     let mut min_prev = 204; // Sentinelwert: 204 = 0xCC
+
+                    // wird derjenige Knoten m ermittelt, sodass der Pfad von 0 über alle Knoten aus der
+                    // Teilmenge minimal ist, indem auf die folgende Eigenschaft des optimalen
+                    // Pfads zurückgegriffen wird:
+                    //
+                    // Ist ein Pfad optimal, so sind auch seine sequenziellen Teilpfade optimal.
+                    // Daher kann auf diese zuvor berechneten Ergebnisse zurückgegriffen werden.
                     for m in subset {
                         if m == 0 || m == k {
                             continue;
                         }
-                        let value = cache.c(subset.without(k), m) + dist[(m, k)];
+                        let value = dp_table.c(subset.without(k), m) + dist[(m, k)];
                         if value <= minimum {
                             minimum = value;
                             min_prev = m;
                         }
                     }
 
-                    cache.set(subset, k, minimum, min_prev as u8);
+                    // Das Ergebnis wird in die Tabelle eingetragen, um für k+1 die Rechengrundlage
+                    // zu bieten. Im Falle von Brute Force wäre das Ergebnis immer wieder neu
+                    // errechnet worden, hier wird es memoisiert, was die Zeitkomplexität stark
+                    // senkt.
+                    dp_table.set(subset, k, minimum, min_prev as u8);
                 }
             }
         }
 
+        // Ermittle den Endpunkt des Pfads, sodass die Kettenlänge minimal ist. Da alle
+        // Permutationen (wenn auch klug gecached) traversiert wurden, ist diese garantiert
+        // optimal.
         let mut minimum_chain_len = f32::INFINITY;
         let mut parent = 0;
-        for k in 1..n {
-            let chain_len_k = cache.c(MaskSet::from_range(1..n), k);
+        for k in 1..size {
+            let chain_len_k = dp_table.c(MaskSet::from_range(1..size), k);
             if chain_len_k < minimum_chain_len {
                 minimum_chain_len = chain_len_k;
                 parent = k;
-                cache.set(MaskSet::from_range(1..n), 0, minimum_chain_len, k as u8);
+                dp_table.set(MaskSet::from_range(1..size), 0, minimum_chain_len, k as u8);
             }
         }
 
+        // Falls die Kettenlänge besser als jede bisher ermittelte ist, aktualisiere die globale
+        // und berechne den Pfad.
         if minimum_chain_len < global_best_chain_len {
             global_best_chain_len = minimum_chain_len;
 
             let mut path = Vec::new();
-            let mut bits = MaskSet::from_range(1..n);
+            let mut bits = MaskSet::from_range(1..size);
 
-            for _ in 0..n - 1 {
+            // Der Pfad wird über die p-Funktion, die neben der C-Funktion separat abläuft,
+            // aufgerufen.
+            for _ in 0..size - 1 {
                 path.push(parent);
                 let new_bits = bits.without(parent);
-                parent = cache.p(bits, parent).into();
+                parent = dp_table.p(bits, parent).into();
                 bits = new_bits;
             }
 
@@ -245,13 +271,13 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
 
             let path = path.into_iter().rev();
 
-            let global_path = path.map(|e| (e + start_point) % n);
+            let global_path = path.map(|e| (e + start_point) % size);
 
             global_best_path = Some(global_path.collect_vec());
         }
         ctx.send_path(
             global_best_path.iter().flatten().copied(),
-            Some(start_point as f32 / n as f32),
+            Some(start_point as f32 / size as f32),
         )
     }
 
