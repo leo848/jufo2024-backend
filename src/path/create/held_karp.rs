@@ -293,7 +293,9 @@ pub fn solve2<C: CreateContext>(ctx: C) -> C::Path {
     let mut global_best_chain_len = f32::INFINITY;
 
     for start_point in 0..n {
-        let dist = ctx.adjacency_matrix();
+        let local_ctx = ctx.clone().rotate_left(start_point);
+
+        let dist = local_ctx.adjacency_matrix();
 
         let mut cache: HeldKarpDpCache = HeldKarpDpCache::new(n);
 
@@ -348,9 +350,16 @@ pub fn solve2<C: CreateContext>(ctx: C) -> C::Path {
 
             path.push(0);
 
-            let path = path.into_iter().rev().collect_vec();
-            global_best_path = Some(path);
+            let path = path.into_iter().rev();
+
+            let global_path = path.map(|e| (e + start_point) % n);
+
+            global_best_path = Some(global_path.collect_vec());
         }
+        ctx.send_path(
+            global_best_path.iter().flatten().copied(),
+            Some(start_point as f32 / n as f32),
+        )
     }
 
     match global_best_path {
