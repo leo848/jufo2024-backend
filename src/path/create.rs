@@ -16,7 +16,7 @@ mod ilp;
 #[allow(unused)]
 mod held_karp;
 
-pub use held_karp::solve as held_karp;
+pub use held_karp::solve2 as held_karp;
 pub use ilp::solve as ilp;
 
 pub fn transmute<C: CreateContext>(ctx: C) -> C::Path {
