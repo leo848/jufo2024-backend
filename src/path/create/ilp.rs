@@ -1,68 +1,71 @@
+use crate::dist_graph::Point;
+use crate::CreateContext;
+use crate::Graph;
+use crate::{graph::Path, path::Matrix, typed::Metric};
+use coin_cbc::Col;
+use coin_cbc::{Model, Sense};
 use itertools::Itertools;
-use minilp::{LinearExpr, Solution, Variable};
-
-use crate::{
-    dist_graph::Point,
-    graph::{Graph, Path},
-    typed::Metric,
-};
-use crate::{graph::Matrix, path::CreateContext};
 
 pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
-    let matrix: Matrix = ctx.adjacency_matrix();
+    let matrix = ctx.adjacency_matrix();
 
-    dbg!(matrix);
+    let size = matrix.dim();
+    let node_indices = { || (0..size) };
+
+    let mut model = Model::default();
+
+    let variables = {
+        node_indices()
+            .map(|i| node_indices().map(|j| model.add_binary()).collect_vec())
+            .collect_vec()
+    };
+
+    // (matrix[(i, j)].into(), (0.0, 1.0));
 
     todo!()
 }
 
-#[allow(unused)]
-fn solve_simple(matrix: Matrix, names: &[String]) -> Path {
-    use std::{array, iter};
+pub fn solve_simple(matrix: Matrix, names: &[String]) -> Path {
+    let size = matrix.dim();
+    let node_indices = { || (0..size) };
 
-    use bimap::BiMap;
-    use itertools::Itertools;
-    use minilp::{ComparisonOp, LinearExpr, OptimizationDirection, Problem};
+    let mut model = Model::default();
+    model.set_obj_sense(Sense::Minimize);
 
-    dbg!(&matrix);
-
-    let n = matrix.dim();
-    let node_indices = { || (0..n) };
-
-    let mut problem = Problem::new(OptimizationDirection::Minimize);
-
-    let variables = {
+    let x: Vec<Vec<Col>> = {
         node_indices()
-            .map(|i| {
-                node_indices()
-                    .map(|j| problem.add_var(matrix[(i, j)].into(), (0.0, 1.0)))
-                    .collect_vec()
-            })
+            .map(|i| node_indices().map(|j| model.add_binary()).collect_vec())
             .collect_vec()
     };
 
-    // Jede Zeile darf maximal einen Eintrag haben.
-    for i in 0..n {
-        let mut row_sum = LinearExpr::empty();
-        for j in 0..n {
-            row_sum.add(variables[i][j], 1.0);
+    for i in node_indices() {
+        for j in node_indices() {
+            model.set_obj_coeff(x[i][j], matrix[(i, j)].into())
         }
-        problem.add_constraint(row_sum, ComparisonOp::Le, 1.0);
+    }
+
+    // Jede Zeile darf maximal einen Eintrag haben.
+    for i in node_indices() {
+        let constraint = model.add_row();
+        model.set_row_upper(constraint, 1.0);
+        for j in node_indices() {
+            model.set_weight(constraint, x[i][j], 1.0);
+        }
     }
 
     // Jede Spalte darf maximal einen Eintrag haben.
-    for j in 0..n {
-        let mut col_sum = LinearExpr::empty();
-        for i in 0..n {
-            col_sum.add(variables[i][j], 1.0);
+    for j in node_indices() {
+        let constraint = model.add_row();
+        model.set_row_upper(constraint, 1.0);
+        for i in node_indices() {
+            model.set_weight(constraint, x[i][j], 1.0);
         }
-        problem.add_constraint(col_sum, ComparisonOp::Le, 1.0);
     }
 
     // Jeder Knoten muss erreicht werden.
-    for i in 0..n {
+    for i in node_indices() {
         let mut pairs = Vec::new();
-        for j in 0..n {
+        for j in node_indices() {
             pairs.push((i, j));
             if i != j {
                 pairs.push((j, i));
@@ -70,208 +73,54 @@ fn solve_simple(matrix: Matrix, names: &[String]) -> Path {
         }
         pairs.sort_unstable();
 
-        let vertex_sum = LinearExpr::from(pairs.into_iter().map(|(i, j)| (variables[i][j], 1.0)));
-        problem.add_constraint(vertex_sum, ComparisonOp::Ge, 1.0);
+        let constraint = model.add_row();
+        model.set_row_lower(constraint, 1.0);
+        for (i, j) in pairs {
+            model.set_weight(constraint, x[i][j], 1.0);
+        }
     }
 
-    // Keine Hin- und Rückkanten.
-    for i in 0..n {
-        for j in i..n {
+    // Keine Hin- und Rückkanten
+    for i in node_indices() {
+        for j in node_indices().skip(i) {
+            let constraint = model.add_row();
             if i == j {
-                problem.add_constraint(
-                    LinearExpr::from([(variables[i][j], 1.0)]),
-                    ComparisonOp::Le,
-                    0.0,
-                );
+                model.set_row_equal(constraint, 0.0);
+                model.set_weight(constraint, x[i][i], 1.0);
             } else {
-                let symmetric = LinearExpr::from([(variables[i][j], 1.0), (variables[j][i], 1.0)]);
-                problem.add_constraint(symmetric, ComparisonOp::Le, 1.0);
+                model.set_row_upper(constraint, 1.0);
+                model.set_weight(constraint, x[i][j], 1.0);
+                model.set_weight(constraint, x[j][i], 1.0);
             }
         }
     }
 
     // Insgesamt werden n-1 Knoten erreicht.
-    let mut total_sum = LinearExpr::empty();
-    for i in 0..n {
-        for j in 0..n {
-            total_sum.add(variables[i][j], 1.0);
+    let constraint = model.add_row();
+    model.set_row_equal(constraint, (size - 1) as f64);
+    for i in node_indices() {
+        for j in node_indices() {
+            model.set_weight(constraint, x[i][j], 1.0);
         }
     }
-    problem.add_constraint(total_sum, ComparisonOp::Eq, n as f64 - 1.0);
 
-    dbg!(&problem);
-
-    let mut relaxed_solution = problem.solve().expect("nO solution found");
-
-    // dbg!(&matrix);
-    dbg!(&relaxed_solution);
-
-    dbg!("adding cycle constraints");
-
-    relaxed_solution = add_cycle_constraints(relaxed_solution, &variables);
-
-    println!("{:?}", solution_to_matrix(&relaxed_solution, &variables));
-
-    let mut edges = BiMap::new();
-    for i in 0..n {
-        for j in 0..n {
-            if relaxed_solution[variables[i][j]] != 0.0 {
-                edges.insert(names[i].clone(), names[j].clone());
+    let sol = model.solve();
+    for i in node_indices() {
+        for j in node_indices() {
+            let value = sol.col(x[i][j]);
+            if value == 1.0 {
+                println!("{i} -> {j}");
             }
         }
     }
+    dbg!(model.to_raw().obj_value());
 
-    let mut first = edges.iter().next().unwrap().0;
-    while let Some(left) = edges.get_by_right(first) {
-        // println!("first is {}", left);
-        first = left;
-    }
-    let mut path = vec![first];
-    while let Some(right) = edges.get_by_left(*path.last().unwrap()) {
-        path.push(right);
-    }
-    println!("{}", path.iter().join(" -> "));
+    // (matrix[(i, j)].into(), (0.0, 1.0));
 
-    // a -> g
-    // b -> h
-    // c -> i
-    // d -> e
-    // e -> f
-    // f -> b
-    // h -> d
-    // i -> j
-    // j -> c
-
-    todo!();
+    todo!()
 }
 
-fn solution_to_matrix(solution: &Solution, variables: &[Vec<Variable>]) -> Matrix {
-    let n = variables.len();
-    Matrix::from_f64s(
-        (0..n)
-            .map(|i| (0..n).map(|j| solution[variables[i][j]]).collect_vec())
-            .collect_vec(),
-    )
-    .unwrap()
-}
-
-fn add_cycle_constraints(mut cur_solution: Solution, variables: &[Vec<Variable>]) -> Solution {
-    let n = variables.len();
-    let mut weights = Vec::with_capacity(n * n);
-    loop {
-        weights.clear();
-        weights.resize(n * n, 0.0);
-        for i in 0..n {
-            for j in 0..n {
-                if i != j {
-                    weights[i * n + j] = cur_solution[variables[i][j]];
-                }
-            }
-        }
-        // println!();
-        // for chunk in weights.chunks(n) {
-        //     println!("{}", chunk.iter().map(|n| format!("{:.0}", n)).join(" "));
-        // }
-
-        let (cut_weight, cut_mask) = find_min_cut(n, &mut weights);
-        dbg!(cut_weight, &cut_mask);
-        if cut_weight > 2.0 - 1e-8 || cut_mask.iter().filter(|&&b| b).count() == 1 {
-            return cur_solution;
-        }
-        let mut cut_edges_sum = LinearExpr::empty();
-        for i in 0..n {
-            for j in 0..i {
-                if cut_mask[i] != cut_mask[j] {
-                    cut_edges_sum.add(variables[i][j], 1.0);
-                }
-            }
-        }
-
-        cur_solution = cur_solution
-            .add_constraint(cut_edges_sum, minilp::ComparisonOp::Ge, 2.0)
-            .expect("solution");
-
-        // dbg!(&cur_solution);
-    }
-}
-
-// Adaptiert aus: https://github.com/ztlpn/minilp/blob/master/examples/tsp.rs
-fn find_min_cut(size: usize, weights: &mut [f64]) -> (f64, Vec<bool>) {
-    assert!(size >= 2);
-    assert_eq!(weights.len(), size * size);
-
-    let mut is_merged = vec![false; size];
-    let mut next_in_cluster = (0..size).collect_vec();
-
-    let mut is_added = Vec::with_capacity(size);
-    let mut node_weights = Vec::with_capacity(size);
-
-    let mut best_cut_weight = f64::INFINITY;
-    let mut best_cut = Vec::with_capacity(size);
-
-    for i_phase in 0..(size - 1) {
-        is_added.clear();
-        is_added.extend_from_slice(&is_merged);
-
-        node_weights.clear();
-        node_weights.extend_from_slice(&weights[0..size]);
-
-        let mut prev_node = 0;
-        let mut last_node = 0;
-
-        for _ in 0..(size - i_phase) {
-            prev_node = last_node;
-            let mut max_weight = f64::NEG_INFINITY;
-            for n in 1..size {
-                if !is_added[n] && node_weights[n] > max_weight {
-                    last_node = n;
-                    max_weight = node_weights[n];
-                }
-            }
-
-            is_added[last_node] = true;
-            for i in 0..size {
-                if !is_added[i] {
-                    node_weights[i] += weights[i * size + last_node];
-                }
-            }
-        }
-
-        let cut_weight = node_weights[last_node];
-        let is_best_cut = cut_weight < best_cut_weight;
-        if is_best_cut {
-            best_cut_weight = cut_weight;
-            best_cut.clear();
-            best_cut.resize(size, false);
-        }
-
-        is_merged[prev_node] = true;
-        let mut list_elem = last_node;
-        loop {
-            if is_best_cut {
-                best_cut[list_elem] = true;
-            }
-
-            if next_in_cluster[list_elem] != list_elem {
-                list_elem = next_in_cluster[list_elem];
-            } else {
-                next_in_cluster[list_elem] = prev_node;
-                break;
-            }
-        }
-
-        for n in 0..size {
-            weights[last_node * size + n] += weights[prev_node * size + n];
-        }
-        for n in 0..size {
-            weights[n * size + last_node] = weights[last_node * size + n];
-        }
-    }
-
-    assert!(best_cut_weight.is_finite());
-    (best_cut_weight, best_cut)
-}
-
+#[test]
 fn test_solve() {
     let data: [(&str, f32, f32, f32); 10] = [
         ("Schwarz", 0.0, 0.5, 0.5),

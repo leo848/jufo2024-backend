@@ -18,6 +18,7 @@ impl Matrix {
         Some(Self { values })
     }
 
+    #[allow(dead_code)]
     pub fn from_f64s(values: Vec<Vec<f64>>) -> Option<Self> {
         Self::new(
             values
