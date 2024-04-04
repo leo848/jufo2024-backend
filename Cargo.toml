@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 bimap = "0.6.3"
 chksum = { version = "0.3.0", default_features = false, features = ["md5"] }
+coin_cbc = "0.1.8"
 derive_more = "0.99.17"
 fastrand = "2.0.1"
 itertools = "0.12.0"
