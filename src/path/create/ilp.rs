@@ -1,16 +1,13 @@
 use std::iter::once;
 
-use crate::dist_graph::Point;
+use crate::path::Matrix;
 use crate::CreateContext;
-use crate::Graph;
-use crate::{graph::Path, path::Matrix, typed::Metric};
 use coin_cbc::Col;
-use coin_cbc::Solution;
 use coin_cbc::{Model, Sense};
 use itertools::Itertools;
 
 pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
-    let matrix = ctx.adjacency_matrix();
+    let matrix: Matrix = ctx.adjacency_matrix().normalize().scale(100.0);
 
     let size = ctx.len();
     let node_indices = { || (0..size) };
@@ -20,11 +17,11 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
 
     let x: Vec<Vec<Col>> = {
         node_indices()
-            .map(|i| node_indices().map(|j| model.add_binary()).collect_vec())
+            .map(|_| node_indices().map(|_| model.add_binary()).collect_vec())
             .collect_vec()
     };
 
-    let u: Vec<Col> = node_indices().map(|i| model.add_integer()).collect_vec();
+    // let u: Vec<Col> = node_indices().map(|i| model.add_integer()).collect_vec();
 
     for i in node_indices() {
         for j in node_indices() {
@@ -204,75 +201,4 @@ fn cycle_to_edges(cycle: &[usize]) -> impl Iterator<Item = (usize, usize)> + '_ 
 
 fn cycle_to_edges_symmetric(cycle: &[usize]) -> impl Iterator<Item = (usize, usize)> + '_ {
     cycle_to_edges(cycle).chain(cycle_to_edges(cycle).map(|(a, b)| (b, a)))
-}
-
-#[test]
-fn test_solve() {
-    let data: [(&str, f32, f32, f32); 10] = [
-        ("Schwarz", 0.0, 0.5, 0.5),
-        (
-            "Signalweiß",
-            0.961151360371199,
-            0.50000000009726,
-            0.5000000447823341,
-        ),
-        (
-            "Verkehrsrot",
-            0.5346730535533166,
-            0.7340950690306774,
-            0.6290678476561004,
-        ),
-        (
-            "Lachs",
-            0.7882608186750829,
-            0.6380500410338976,
-            0.5663067939264064,
-        ),
-        (
-            "Zartes Puder",
-            0.7582906300295726,
-            0.5122111542103134,
-            0.5093382344908048,
-        ),
-        (
-            "Luftschloss",
-            0.8408536088971593,
-            0.42016124595739973,
-            0.43023374658457403,
-        ),
-        (
-            "Nilblau",
-            0.375673715958732,
-            0.47583421184458446,
-            0.2646716029139586,
-        ),
-        (
-            "Pflaume",
-            0.809408742435091,
-            0.5926152589519652,
-            0.44128616905899143,
-        ),
-        (
-            "Mittleres Violettrot",
-            0.5990910068501093,
-            0.7090670259721504,
-            0.4296126049311067,
-        ),
-        (
-            "Leuchtendes Rosa",
-            0.7158785829249797,
-            0.7615687324845466,
-            0.45727066011132506,
-        ),
-    ];
-    let points: Vec<Point> = data.map(|(_, r, g, b)| Point::new(vec![r, g, b])).into();
-    let metric = Metric {
-        norm: crate::typed::Norm::Euclidean,
-        invert: false,
-    };
-    let matrix = Graph::from_points(points, metric).matrix;
-    let names = data.map(|(name, ..)| name.to_owned());
-
-    // let path = solve_simple(matrix, &names);
-    // dbg!(path);
 }

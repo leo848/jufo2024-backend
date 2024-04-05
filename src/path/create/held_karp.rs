@@ -1,14 +1,8 @@
-use std::{fmt::Debug, fs::OpenOptions, hint::black_box, iter::empty, ops::Range};
+use std::{fmt::Debug, ops::Range};
 
 use itertools::Itertools;
 
-use crate::{
-    dist_graph::Point,
-    graph::Path,
-    path::{CreateContext, Matrix},
-    typed::Metric,
-    Graph,
-};
+use crate::path::CreateContext;
 
 #[derive(Copy, Clone)]
 struct MaskSet {
@@ -37,19 +31,9 @@ impl MaskSet {
         }
     }
 
-    fn is_empty(self) -> bool {
-        self.inner == 0
-    }
-
     fn without(self, k: usize) -> Self {
         Self {
             inner: self.inner & !(1 << k),
-        }
-    }
-
-    fn with(self, k: usize) -> Self {
-        Self {
-            inner: self.inner | (1 << k),
         }
     }
 
@@ -176,8 +160,6 @@ impl HeldKarpDpCache {
 }
 
 pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
-    use std::collections::{HashMap, HashSet};
-
     let size = ctx.len();
 
     assert!(size < 32);

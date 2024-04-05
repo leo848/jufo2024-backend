@@ -10,10 +10,8 @@ use crate::{
     util::{factorial, UsableFloat},
 };
 
-#[allow(unused)]
 mod ilp;
 
-#[allow(unused)]
 mod held_karp;
 
 pub use held_karp::solve as held_karp;
