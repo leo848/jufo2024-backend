@@ -12,7 +12,7 @@ pub struct Matrix {
 impl Matrix {
     pub fn new(values: Vec<Vec<Scalar>>) -> Option<Self> {
         let dim = values.len();
-        if values.iter().any(|inner| inner.len() != dim) {
+        if dim != 0 && values.iter().any(|inner| inner.len() != dim) {
             return None;
         }
         Some(Self { values })
@@ -47,6 +47,29 @@ impl Matrix {
         self.values.rotate_left(index);
         for row in &mut self.values {
             row.rotate_left(index);
+        }
+        self
+    }
+
+    pub fn max(&self) -> Scalar {
+        self.values
+            .iter()
+            .flatten()
+            .copied()
+            .max_by(Scalar::total_cmp)
+            .expect("Matrix to have values")
+    }
+
+    pub fn normalize(self) -> Self {
+        let max = self.max();
+        self.scale(1.0 / max)
+    }
+
+    pub fn scale(mut self, factor: Scalar) -> Self {
+        for row in self.values.iter_mut() {
+            for entry in row.iter_mut() {
+                *entry *= factor;
+            }
         }
         self
     }
