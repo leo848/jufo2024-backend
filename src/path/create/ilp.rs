@@ -96,6 +96,21 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
     let mut paths = print_paths_solution(&mut model, &x);
 
     while paths.len() > 1 {
+        ctx.send_edges(
+            paths
+                .iter()
+                .flat_map(|path| {
+                    path.iter().tuple_windows::<(_, _)>().chain(
+                        if path[0] == path[path.len() - 1] {
+                            vec![(&path[path.len() - 1], &path[0])]
+                        } else {
+                            vec![]
+                        },
+                    )
+                })
+                .map(|(&i, &j)| (i, j)),
+            None,
+        );
         add_cycle_constraints(&mut model, &paths, &x);
         paths = print_paths_solution(&mut model, &x);
     }
