@@ -108,7 +108,10 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
                         },
                     )
                 })
-                .map(|(&i, &j)| (i, j)),
+                .map(|(&i, &j)| (i, j))
+                .filter(|(i, j)| i != j)
+                .sorted()
+                .dedup(),
             None,
         );
         add_cycle_constraints(&mut model, &paths, &x);
