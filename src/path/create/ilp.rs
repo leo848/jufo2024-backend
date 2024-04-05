@@ -1,32 +1,18 @@
+use std::iter::once;
+
 use crate::dist_graph::Point;
 use crate::CreateContext;
 use crate::Graph;
 use crate::{graph::Path, path::Matrix, typed::Metric};
 use coin_cbc::Col;
+use coin_cbc::Solution;
 use coin_cbc::{Model, Sense};
 use itertools::Itertools;
 
 pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
     let matrix = ctx.adjacency_matrix();
 
-    let size = matrix.dim();
-    let node_indices = { || (0..size) };
-
-    let mut model = Model::default();
-
-    let variables = {
-        node_indices()
-            .map(|i| node_indices().map(|j| model.add_binary()).collect_vec())
-            .collect_vec()
-    };
-
-    // (matrix[(i, j)].into(), (0.0, 1.0));
-
-    todo!()
-}
-
-pub fn solve_simple(matrix: Matrix, names: &[String]) -> Path {
-    let size = matrix.dim();
+    let size = ctx.len();
     let node_indices = { || (0..size) };
 
     let mut model = Model::default();
@@ -37,6 +23,8 @@ pub fn solve_simple(matrix: Matrix, names: &[String]) -> Path {
             .map(|i| node_indices().map(|j| model.add_binary()).collect_vec())
             .collect_vec()
     };
+
+    let u: Vec<Col> = node_indices().map(|i| model.add_integer()).collect_vec();
 
     for i in node_indices() {
         for j in node_indices() {
@@ -104,20 +92,118 @@ pub fn solve_simple(matrix: Matrix, names: &[String]) -> Path {
         }
     }
 
-    let sol = model.solve();
-    for i in node_indices() {
-        for j in node_indices() {
-            let value = sol.col(x[i][j]);
-            if value == 1.0 {
-                println!("{i} -> {j}");
-            }
-        }
+    // Zyklen verhindern
+
+    model.solve();
+
+    let mut paths = print_paths_solution(&mut model, &x);
+
+    while paths.len() > 1 {
+        add_cycle_constraints(&mut model, &paths, &x);
+        paths = print_paths_solution(&mut model, &x);
     }
-    dbg!(model.to_raw().obj_value());
+
+    let path = &paths[0];
 
     // (matrix[(i, j)].into(), (0.0, 1.0));
 
-    todo!()
+    ctx.path_from_indices(path.iter().copied())
+}
+
+fn print_paths_solution(model: &mut Model, x: &Vec<Vec<Col>>) -> Vec<Vec<usize>> {
+    let sol = model.solve();
+    let paths = edges_to_paths({
+        let sol = &sol;
+        let x = &x;
+        &(0..x.len())
+            .flat_map(move |i| {
+                (0..x.len())
+                    .map(move |j| (i, j, sol.col(x[i][j])))
+                    .filter(|&(_, _, v)| v == 1.0)
+                    .map(|(i, j, _)| (i, j))
+            })
+            .collect_vec()
+    });
+    for path in paths.iter() {
+        println!("{}", path.iter().join(" -> "));
+    }
+    println!();
+    paths
+}
+
+fn add_cycle_constraints(model: &mut Model, paths: &[Vec<usize>], x: &Vec<Vec<Col>>) {
+    let is_cycle = |p: &[usize]| p[0] == p[p.len() - 1];
+    for path in paths {
+        let row = model.add_row();
+        model.set_row_upper(row, path.len() as f64 - 2.0);
+        if !is_cycle(path) {
+            continue;
+        }
+        let edges = cycle_to_edges_symmetric(&path[1..]);
+        for (i, j) in edges {
+            model.set_weight(row, x[i][j], 1.0);
+            model.set_weight(row, x[j][i], 1.0);
+        }
+    }
+}
+
+fn edges_to_paths(edges: &[(usize, usize)]) -> Vec<Vec<usize>> {
+    let mut paths: Vec<Vec<usize>> = Vec::with_capacity(edges.len());
+    for &(i, j) in edges {
+        let mut inserted = false;
+        'insertion: for path in paths.iter_mut() {
+            for (index, node) in path.clone().iter().copied().enumerate() {
+                if node == i {
+                    path.insert(index + 1, j);
+                    inserted = true;
+                    break 'insertion;
+                } else if node == j {
+                    path.insert(index, i);
+                    inserted = true;
+                    break 'insertion;
+                }
+            }
+        }
+        if !inserted {
+            paths.push(vec![i, j]);
+        }
+    }
+    let mut changed = true;
+    'outer: while changed {
+        changed = false;
+        paths.retain(|path| path.len() >= 1);
+        for paths_idx in 0..paths.len() {
+            for other_paths_idx in paths_idx + 1..paths.len() {
+                let path = &paths[paths_idx];
+                let other_path = &paths[other_paths_idx];
+                if path[path.len() - 1] == other_path[0] {
+                    let other_iter = other_path.clone();
+                    paths[paths_idx].extend(&other_iter[1..]);
+                    paths[other_paths_idx].clear();
+                    changed = true;
+                    continue 'outer;
+                } else if other_path[other_path.len() - 1] == path[0] {
+                    let iter = path.clone();
+                    paths[other_paths_idx].extend(&iter[1..]);
+                    paths[paths_idx].clear();
+                    changed = true;
+                    continue 'outer;
+                }
+            }
+        }
+    }
+    paths
+}
+
+fn cycle_to_edges(cycle: &[usize]) -> impl Iterator<Item = (usize, usize)> + '_ {
+    cycle
+        .windows(2)
+        .map(|t| (t[0], t[1]))
+        .chain(once((cycle[cycle.len() - 1], cycle[0])))
+}
+
+fn cycle_to_edges_symmetric(cycle: &[usize]) -> impl Iterator<Item = (usize, usize)> + '_ {
+    cycle_to_edges(cycle).chain(cycle_to_edges(cycle).map(|(a, b)| (b, a)))
 }
 
 #[test]
@@ -187,6 +273,6 @@ fn test_solve() {
     let matrix = Graph::from_points(points, metric).matrix;
     let names = data.map(|(name, ..)| name.to_owned());
 
-    let path = solve_simple(matrix, &names);
+    // let path = solve_simple(matrix, &names);
     // dbg!(path);
 }
