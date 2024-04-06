@@ -18,7 +18,7 @@ use graph::Graph;
 use itertools::Itertools;
 use path::{improvement::PathImprovement, CreateContext};
 use simple_websockets::Responder;
-use typed::{Action, Output};
+use typed::{Action, OptionsPool, Output};
 
 use crate::{
     dist_path::{creation::DistPathCreation, improvement::DistPathImprovement},
@@ -67,8 +67,12 @@ fn main() {
             Input::Log { message } => {
                 eprintln!("Message: {message}");
             }
-            Input::Action { action, latency } => {
-                handle_action(action, latency, &client);
+            Input::Action {
+                action,
+                latency,
+                pool,
+            } => {
+                handle_action(action, latency, pool, &client);
             }
             Input::Latency => {
                 let time_millis = SystemTime::now()
@@ -104,13 +108,14 @@ fn main() {
     }
 }
 
-fn handle_action(action: Action, latency: u64, client: &Responder) {
+fn handle_action(action: Action, latency: u64, pool: OptionsPool, client: &Responder) {
     match action {
         Action::SortNumbers { numbers, algorithm } => {
             let method = algorithm.implementation();
             let ctx = IntegerSortContext {
                 action: ActionContext {
                     client: client.clone(),
+                    pool,
                     latency,
                 },
                 numbers,
@@ -133,6 +138,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
             let ctx = DistPathCreateContext {
                 action: ActionContext {
                     client: client.clone(),
+                    pool,
                     latency,
                 },
                 dim,
@@ -158,6 +164,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
             let ctx = DistPathImproveContext {
                 action: ActionContext {
                     client: client.clone(),
+                    pool,
                     latency,
                 },
                 dim,
@@ -180,6 +187,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
                 graph: input_graph,
                 action: ActionContext {
                     client: client.clone(),
+                    pool,
                     latency,
                 },
             };
@@ -202,6 +210,7 @@ fn handle_action(action: Action, latency: u64, client: &Responder) {
                 prefer_step,
                 action: ActionContext {
                     client: client.clone(),
+                    pool,
                     latency,
                 },
             };

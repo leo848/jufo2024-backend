@@ -9,7 +9,7 @@ use simple_websockets::Responder;
 use crate::{
     dist_graph,
     graph::{self, Graph},
-    typed::{send, IntoOutput, Metric},
+    typed::{send, IntoOutput, Metric, OptionsPool},
 };
 
 static LAST_ACTION_SEND: Mutex<u128> = Mutex::new(0);
@@ -17,6 +17,7 @@ static LAST_ACTION_SEND: Mutex<u128> = Mutex::new(0);
 #[derive(Clone)]
 pub struct ActionContext {
     pub client: Responder,
+    pub pool: OptionsPool,
     pub latency: u64,
 }
 

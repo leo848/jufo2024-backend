@@ -1,3 +1,4 @@
+use serde::Deserialize;
 use std::iter::once;
 
 use crate::path::Matrix;
@@ -5,6 +6,12 @@ use crate::CreateContext;
 use coin_cbc::Col;
 use coin_cbc::{Model, Sense};
 use itertools::Itertools;
+
+#[derive(Clone, Copy, Debug, Default, Deserialize)]
+pub enum MilpSolver {
+    #[default]
+    CoinOrCbc,
+}
 
 pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
     let matrix: Matrix = ctx.adjacency_matrix().normalize().scale(100.0);

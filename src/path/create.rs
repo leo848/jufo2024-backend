@@ -10,7 +10,7 @@ use crate::{
     util::{factorial, UsableFloat},
 };
 
-mod ilp;
+pub mod ilp;
 
 mod held_karp;
 

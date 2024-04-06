@@ -1,3 +1,4 @@
+use crate::path::create::ilp::MilpSolver;
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
@@ -175,6 +176,15 @@ pub enum Action {
     },
 }
 
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OptionsPool {
+    #[serde(default)]
+    pub iteration_count: Option<usize>,
+    #[serde(default)]
+    pub milp_solver: Option<MilpSolver>,
+}
+
 #[derive(Deserialize, Debug, Clone)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum Input {
@@ -185,6 +195,7 @@ pub enum Input {
         action: Action,
         #[serde(default)]
         latency: u64,
+        pool: OptionsPool,
     },
     Latency,
     WordToVec {
