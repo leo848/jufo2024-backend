@@ -4,10 +4,18 @@ Dieses Repository enthält den Code für den Backend-Webserver des Jugend forsch
 
 ## Installation
 
+Um den effizientesten Algorithmus auf der Basis von [ILP](https://de.wikipedia.org/wiki/Ganzzahlige_lineare_Optimierung) auszuführen, wird die [coin-cbc](https://github.com/KardinalAI/coin_cbc/)-Bibliothek vorausgesetzt. Diese kann auf Debian-basierten Systemen wie folgt installiert werden:
+
+```
+sudo apt install coinor-libcbc-dev
+```
+
+Im Anschluss wird dann dieses Projekt heruntergeladen und ausgeführt:
+
 ```
 git clone https://github.com/leo848/jufo2024-backend
 cd jufo2024-backend
-cargo run
+cargo run --release
 ```
 
 Auf dem Port 3141 wird ein Webserver gestartet, der einkommende Requests über das Websocket-Protokoll beantwortet. Eine dazugehörige Frontend-Anwendung, [jufo2024-frontend](https://github.com/leo848/jufo2024-frontend), nutzt diesen Server zur Sortierung verschiedener Arten von Objekten.
