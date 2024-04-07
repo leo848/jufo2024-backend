@@ -12,6 +12,7 @@ use crate::{
     dist_graph,
     graph::{self, Graph, Matrix},
     path::{creation::PathCreation, improvement::PathImprovement},
+    pool::OptionsPool,
     DistPathCreation, DistPathImprovement, PathImproveContext,
 };
 
@@ -45,6 +46,8 @@ pub trait PathContext {
         .expect("node_indices misbehaved")
     }
     fn send_path(&self, path: impl IntoIterator<Item = usize>, progress: Option<f32>);
+
+    fn options(&self) -> &OptionsPool;
 }
 
 pub trait CreateContext: PathContext + Clone {
@@ -98,6 +101,10 @@ impl PathContext for DistPathCreateContext {
             dpc = dpc.progress(p)
         }
         self.action.send(dpc);
+    }
+
+    fn options(&self) -> &OptionsPool {
+        &self.action.pool
     }
 }
 
@@ -164,6 +171,10 @@ impl PathContext for PathCreateContext {
         }
         self.action.send(pc);
     }
+
+    fn options(&self) -> &OptionsPool {
+        &self.action.pool
+    }
 }
 
 impl CreateContext for PathCreateContext {
@@ -222,6 +233,10 @@ impl PathContext for DistPathImproveContext {
         }
         self.action.send(dpc);
     }
+
+    fn options(&self) -> &OptionsPool {
+        &self.action.pool
+    }
 }
 
 impl ImproveContext for DistPathImproveContext {
@@ -268,6 +283,10 @@ impl PathContext for PathImproveContext {
             pc = pc.progress(p);
         }
         self.action.send(pc);
+    }
+
+    fn options(&self) -> &OptionsPool {
+        &self.action.pool
     }
 }
 

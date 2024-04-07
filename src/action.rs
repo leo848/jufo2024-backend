@@ -9,7 +9,8 @@ use simple_websockets::Responder;
 use crate::{
     dist_graph,
     graph::{self, Graph},
-    typed::{send, IntoOutput, Metric, OptionsPool},
+    pool::OptionsPool,
+    typed::{send, IntoOutput, Metric},
 };
 
 static LAST_ACTION_SEND: Mutex<u128> = Mutex::new(0);

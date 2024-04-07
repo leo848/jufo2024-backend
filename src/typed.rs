@@ -1,4 +1,4 @@
-use crate::path::create::ilp::MilpSolver;
+use crate::pool::OptionsPool;
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
@@ -174,15 +174,6 @@ pub enum Action {
         #[serde(default)]
         prefer_step: bool,
     },
-}
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct OptionsPool {
-    #[serde(default)]
-    pub iteration_count: Option<usize>,
-    #[serde(default)]
-    pub milp_solver: Option<MilpSolver>,
 }
 
 #[derive(Deserialize, Debug, Clone)]

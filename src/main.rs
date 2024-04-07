@@ -17,8 +17,9 @@ use action::{
 use graph::Graph;
 use itertools::Itertools;
 use path::{improvement::PathImprovement, CreateContext};
+use pool::OptionsPool;
 use simple_websockets::Responder;
-use typed::{Action, OptionsPool, Output};
+use typed::{Action, Output};
 
 use crate::{
     dist_path::{creation::DistPathCreation, improvement::DistPathImprovement},
@@ -42,6 +43,7 @@ mod error;
 mod graph;
 mod integer_sort;
 mod path;
+mod pool;
 mod typed;
 mod util;
 mod word2vec;

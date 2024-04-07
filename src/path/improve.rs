@@ -193,9 +193,13 @@ pub fn inner_rotate<C: ImproveContext>(ctx: C) -> C::Path {
 
 pub fn simulated_annealing<C: ImproveContext>(ctx: C) -> C::Path {
     let mut path = ctx.start_path();
+    let pool = ctx.options();
 
-    let initial_temp: f64 = 0.15;
-    let k: f64 = 0.00000000025;
+    let initial_temp: f64 = pool.initial_temperature.unwrap_or(0.15);
+    let k: f64 = (pool
+        .iteration_count
+        .unwrap_or((1.0 / 0.00000000025) as usize) as f64)
+        .recip();
     let mut temperature = initial_temp;
     let mut i = 0;
     let mut cost = ctx.cost(&path);
@@ -204,7 +208,7 @@ pub fn simulated_annealing<C: ImproveContext>(ctx: C) -> C::Path {
     let mut improved_since_last_send = true;
 
     while temperature > 0.000000005 {
-        if i % (1 << 24) == 0 {
+        if i % (1 << 20) == 0 {
             if improved_since_last_send {
                 ctx.send_path(
                     path_approx.iter(),
