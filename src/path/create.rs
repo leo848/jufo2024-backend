@@ -10,6 +10,7 @@ use crate::{
     util::{factorial, UsableFloat},
 };
 
+#[allow(unused)]
 pub mod ilp;
 
 mod held_karp;
