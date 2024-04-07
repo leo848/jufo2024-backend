@@ -8,6 +8,7 @@ use coin_cbc::{Model, Sense};
 use itertools::Itertools;
 
 #[derive(Clone, Copy, Debug, Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub enum MilpSolver {
     #[default]
     CoinOrCbc,
