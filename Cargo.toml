@@ -11,7 +11,7 @@ chksum = { version = "0.3.0", default_features = false, features = ["md5"] }
 coin_cbc_orig = { version = "0.1.8", package = "coin_cbc" }
 derive_more = "0.99.17"
 fastrand = "2.0.1"
-good_lp = { version = "1.8.1", features = ["highs", "scip"] }
+good_lp = { version = "1.8.1" }
 itertools = "0.12.0"
 minilp = "0.2.2"
 serde = { version = "1.0.190", features = ["derive"] }
