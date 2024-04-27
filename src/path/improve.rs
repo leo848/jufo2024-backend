@@ -191,21 +191,65 @@ pub fn inner_rotate<C: ImproveContext>(ctx: C) -> C::Path {
     ctx.path_from_indices(path.iter())
 }
 
-pub fn two_opt_and_inner_rotate<C: ImproveContext>(mut ctx: C) -> C::Path {
-    let mut path = ctx.path_from_indices(ctx.start_path().iter());
-    let mut prev_path = None;
-
-    while prev_path.as_ref() != Some(&path) {
-        prev_path = Some(path.clone());
-
-        ctx = ctx.with_start_path(path);
-        path = two_opt(ctx.clone());
-
-        ctx = ctx.with_start_path(path);
-        path = inner_rotate(ctx.clone());
+pub fn two_opt_and_inner_rotate<C: ImproveContext>(ctx: C) -> C::Path {
+    fn two_opt_swap(path: &mut graph::Path, v1: usize, v2: usize) {
+        let path = path.as_mut();
+        path[v1 + 1..v2].reverse();
     }
 
-    path
+    let mut improvement = true;
+    let mut path = ctx.start_path();
+    let mut best_cost = ctx.cost(&path);
+
+    'improvin: while improvement {
+        improvement = false;
+        for i in 0..path.len() - 1 {
+            for j in i + 1..path.len() {
+                two_opt_swap(&mut path, i, j);
+                let new_cost = ctx.cost(&path);
+                if new_cost < best_cost {
+                    ctx.send_path(
+                        path.iter(),
+                        Some((i * path.len() + j) as f32 / ((path.len()) * path.len()) as f32),
+                    );
+                }
+                if new_cost < best_cost {
+                    if !ctx.prefer_step() {
+                        improvement = true;
+                    }
+                    best_cost = new_cost;
+                    continue 'improvin;
+                }
+                two_opt_swap(&mut path, i, j);
+            }
+        }
+        for start in 0..path.len() {
+            ctx.send_path_for_reactivity(path.iter(), Some(start as f32 / path.len() as f32));
+            for end in start + 1..path.len() {
+                for amount in 1..end - start {
+                    path.as_mut()[start..end].rotate_left(amount);
+                    let new_cost = ctx.cost(&path);
+                    if new_cost < best_cost {
+                        ctx.send_path(
+                            path.iter(),
+                            Some(
+                                (start * path.len() + end) as f32
+                                    / ((path.len() * path.len()) as f32),
+                            ),
+                        );
+                        best_cost = new_cost;
+                        if !ctx.prefer_step() {
+                            improvement = true;
+                        }
+                        continue 'improvin;
+                    }
+                    path.as_mut()[start..end].rotate_right(amount);
+                }
+            }
+        }
+    }
+
+    ctx.path_from_indices(path.iter())
 }
 
 pub fn simulated_annealing<C: ImproveContext>(ctx: C) -> C::Path {

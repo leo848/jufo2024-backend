@@ -3,6 +3,7 @@ pub mod creation;
 pub mod improve;
 pub mod improvement;
 
+use std::fmt::Debug;
 use std::ops::Range;
 
 use itertools::Itertools;
@@ -19,7 +20,7 @@ use crate::{
 const PESSIMAL: bool = false;
 
 pub trait PathContext {
-    type Path: PartialEq + Clone;
+    type Path: Debug + PartialEq + Clone;
 
     fn path_from_indices(&self, path: impl IntoIterator<Item = usize>) -> Self::Path;
     fn len(&self) -> usize;
