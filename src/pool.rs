@@ -10,4 +10,6 @@ pub struct OptionsPool {
     pub initial_temperature: Option<f64>,
     #[serde(default)]
     pub milp_solver: Option<MilpSolver>,
+    #[serde(default)]
+    pub ilp_max_duration: Option<u64>,
 }

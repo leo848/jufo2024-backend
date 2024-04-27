@@ -10,6 +10,7 @@
 // use good_lp::Variable;
 use serde::Deserialize;
 use std::iter::once;
+use std::time::{Duration, Instant};
 
 use crate::path::Matrix;
 use crate::CreateContext;
@@ -27,6 +28,7 @@ pub enum MilpSolver {
 
 pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
     let matrix: Matrix = ctx.adjacency_matrix().normalize().scale(100.0);
+    let pool = ctx.options();
 
     let size = ctx.len();
     let node_indices = { || (0..size) };
@@ -116,7 +118,14 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
 
     let mut paths = print_paths_solution(&mut model, &x);
 
+    let time_start = Instant::now();
+    let max_time = Duration::from_secs(pool.ilp_max_duration.unwrap_or(3600));
+
     while paths.len() > 1 {
+        if time_start.elapsed() > max_time {
+            return ctx.path_from_indices(ctx.node_indices());
+        }
+
         let edges_to_send = paths
             .iter()
             .flat_map(|path| {

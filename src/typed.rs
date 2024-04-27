@@ -93,6 +93,7 @@ pub enum PathImproveMethod {
     TwoOpt,
     ThreeOpt,
     InnerRotate,
+    TwoOptAndInnerRotate,
     SimulatedAnnealing,
 }
 
@@ -103,6 +104,7 @@ impl PathImproveMethod {
             Self::Rotate => path::improve::rotate,
             Self::InnerRotate => path::improve::inner_rotate,
             Self::TwoOpt => path::improve::two_opt,
+            Self::TwoOptAndInnerRotate => path::improve::two_opt_and_inner_rotate,
             Self::ThreeOpt => path::improve::three_opt,
             Self::Swap => path::improve::swap,
             Self::SimulatedAnnealing => path::improve::simulated_annealing,
@@ -115,6 +117,7 @@ impl PathImproveMethod {
             Self::Rotate => path::improve::rotate,
             Self::InnerRotate => path::improve::inner_rotate,
             Self::TwoOpt => path::improve::two_opt,
+            Self::TwoOptAndInnerRotate => path::improve::two_opt_and_inner_rotate,
             Self::ThreeOpt => path::improve::three_opt,
             Self::Swap => path::improve::swap,
             Self::SimulatedAnnealing => path::improve::simulated_annealing,

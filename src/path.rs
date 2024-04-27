@@ -19,7 +19,7 @@ use crate::{
 const PESSIMAL: bool = false;
 
 pub trait PathContext {
-    type Path;
+    type Path: PartialEq + Clone;
 
     fn path_from_indices(&self, path: impl IntoIterator<Item = usize>) -> Self::Path;
     fn len(&self) -> usize;
@@ -57,10 +57,11 @@ pub trait CreateContext: PathContext + Clone {
         Self: Sized;
 }
 
-pub trait ImproveContext: PathContext {
+pub trait ImproveContext: PathContext + Clone {
     fn start_path(&self) -> graph::Path {
         graph::Path::new(self.node_indices().collect())
     }
+    fn with_start_path(self, path: Self::Path) -> Self;
     fn send_path_for_reactivity(
         &self,
         path: impl IntoIterator<Item = usize>,
@@ -255,6 +256,10 @@ impl ImproveContext for DistPathImproveContext {
     fn prefer_step(&self) -> bool {
         self.prefer_step
     }
+
+    fn with_start_path(self, path: Self::Path) -> Self {
+        Self { path, ..self }
+    }
 }
 
 impl PathContext for PathImproveContext {
@@ -310,5 +315,9 @@ impl ImproveContext for PathImproveContext {
 
     fn start_path(&self) -> graph::Path {
         self.path.clone()
+    }
+
+    fn with_start_path(self, path: Self::Path) -> Self {
+        Self { path, ..self }
     }
 }

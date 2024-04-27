@@ -9,7 +9,7 @@ use serde::Serialize;
 
 use super::Edge;
 
-#[derive(Constructor, Debug, Clone, Serialize)]
+#[derive(Constructor, Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct Path(Vec<usize>);
 
 impl Path {

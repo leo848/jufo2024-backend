@@ -191,6 +191,23 @@ pub fn inner_rotate<C: ImproveContext>(ctx: C) -> C::Path {
     ctx.path_from_indices(path.iter())
 }
 
+pub fn two_opt_and_inner_rotate<C: ImproveContext>(mut ctx: C) -> C::Path {
+    let mut path = ctx.path_from_indices(ctx.start_path().iter());
+    let mut prev_path = None;
+
+    while prev_path.as_ref() != Some(&path) {
+        prev_path = Some(path.clone());
+
+        ctx = ctx.with_start_path(path);
+        path = two_opt(ctx.clone());
+
+        ctx = ctx.with_start_path(path);
+        path = inner_rotate(ctx.clone());
+    }
+
+    path
+}
+
 pub fn simulated_annealing<C: ImproveContext>(ctx: C) -> C::Path {
     let mut path = ctx.start_path();
     let pool = ctx.options();
