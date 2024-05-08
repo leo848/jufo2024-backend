@@ -10,6 +10,7 @@
 // use good_lp::Variable;
 use serde::Deserialize;
 use std::iter::once;
+use std::ops::Range;
 use std::time::{Duration, Instant};
 
 use crate::path::Matrix;
@@ -142,7 +143,7 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
             .sorted()
             .dedup();
         ctx.send_edges(edges_to_send, None);
-        add_cycle_constraints(&mut model, &paths, &x);
+        add_cycle_constraints(&mut model, &paths, &x, node_indices());
         paths = print_paths_solution(&mut model, &x);
     }
 
@@ -174,18 +175,34 @@ fn print_paths_solution(model: &mut Model, x: &Vec<Vec<Col>>) -> Vec<Vec<usize>>
     paths
 }
 
-fn add_cycle_constraints(model: &mut Model, paths: &[Vec<usize>], x: &Vec<Vec<Col>>) {
+fn add_cycle_constraints(
+    model: &mut Model,
+    paths: &[Vec<usize>],
+    x: &Vec<Vec<Col>>,
+    node_indices: Range<usize>,
+) {
     let is_cycle = |p: &[usize]| p[0] == p[p.len() - 1];
     for path in paths {
-        let row = model.add_row();
-        model.set_row_upper(row, path.len() as f64 - 2.0);
         if !is_cycle(path) {
             continue;
         }
+        // Constraint: diesen Zyklus verbieten
+        let row = model.add_row();
+        model.set_row_upper(row, path.len() as f64 - 2.0);
         let edges = cycle_to_edges_symmetric(&path[1..]);
         for (i, j) in edges {
             model.set_weight(row, x[i][j], 1.0);
             model.set_weight(row, x[j][i], 1.0);
+        }
+
+        // Constraint: der Zyklus muss eine ausgehende Kante haben
+        let row = model.add_row();
+        model.set_row_lower(row, 1.0);
+        for &index in &path[1..] {
+            for other_index in node_indices.clone().filter(|i| !path.contains(i)) {
+                model.set_weight(row, x[index][other_index], 1.0);
+                model.set_weight(row, x[other_index][index], 1.0);
+            }
         }
     }
 }
