@@ -196,12 +196,14 @@ fn add_cycle_constraints(
         }
 
         // Constraint: der Zyklus muss eine ausgehende Kante haben
-        let row = model.add_row();
-        model.set_row_lower(row, 1.0);
-        for &index in &path[1..] {
-            for other_index in node_indices.clone().filter(|i| !path.contains(i)) {
-                model.set_weight(row, x[index][other_index], 1.0);
-                model.set_weight(row, x[other_index][index], 1.0);
+        if path.len() > 4 {
+            let row = model.add_row();
+            model.set_row_lower(row, 1.0);
+            for &index in &path[1..] {
+                for other_index in node_indices.clone().filter(|i| !path.contains(i)) {
+                    model.set_weight(row, x[index][other_index], 1.0);
+                    model.set_weight(row, x[other_index][index], 1.0);
+                }
             }
         }
     }
