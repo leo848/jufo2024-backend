@@ -71,6 +71,20 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
         }
     }
 
+    // Respektiere Start- und Ende
+    let ends = [pool.ilp_start, pool.ilp_end].into_iter().flatten();
+    for start in ends {
+        let constraint = model.add_row();
+        model.set_row_upper(constraint, 1.0);
+        for j in node_indices() {
+            if j == start {
+                continue;
+            }
+            model.set_weight(constraint, x[start][j], 1.0);
+            model.set_weight(constraint, x[j][start], 1.0);
+        }
+    }
+
     // Jeder Knoten muss erreicht werden.
     for i in node_indices() {
         let mut pairs = Vec::new();
@@ -113,9 +127,9 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
         }
     }
 
-    // Zyklen verhindern
-
     model.solve();
+
+    // Zyklen verhindern
 
     let mut paths = print_paths_solution(&mut model, &x);
 
@@ -147,9 +161,16 @@ pub fn solve<C: CreateContext>(ctx: C) -> C::Path {
         paths = print_paths_solution(&mut model, &x);
     }
 
-    let path = &paths[0];
+    let mut path = paths[0].clone();
 
     // (matrix[(i, j)].into(), (0.0, 1.0));
+
+    if pool
+        .ilp_start
+        .is_some_and(|start| path.last() == Some(&start))
+    {
+        path.reverse();
+    }
 
     ctx.path_from_indices(path.iter().copied())
 }
